@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -11,11 +12,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPostSchema } from "@shared/schema";
 import { Form, FormControl,FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Loader2, Send, Image as ImageIcon, Recycle, Leaf, Trash2 } from "lucide-react";
+import { Loader2, Send, Image as ImageIcon, Recycle, Leaf, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const categories = [
   { id: "limpieza", label: "Limpieza", icon: Trash2 },
@@ -27,6 +29,7 @@ const categories = [
 export default function Community() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { data: posts, isLoading } = useQuery<PostWithAuthor[]>({
     queryKey: [api.posts.list.path],
   });
@@ -47,6 +50,7 @@ export default function Community() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.posts.list.path] });
       form.reset();
+      setIsDialogOpen(false);
       toast({
         title: "¡Publicado!",
         description: "Tu aporte ambiental ha sido compartido con la comunidad.",
@@ -70,78 +74,84 @@ export default function Community() {
         className="mb-12 text-center"
       >
         <h1 className="text-4xl font-bold text-primary mb-4">Comunidad Eco-Activa</h1>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-muted-foreground text-lg mb-8">
           Comparte tus labores, consejos y experiencias cuidando nuestro entorno.
         </p>
-      </motion.div>
 
-      <Card className="mb-12 border-primary/20 bg-primary/5">
-        <CardHeader>
-          <CardTitle className="text-xl">¿Qué labor ambiental realizaste hoy?</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit((v) => mutation.mutate(v))} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Categoría</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona una categoría" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id}>
-                            <div className="flex items-center gap-2">
-                              <cat.icon className="h-4 w-4" />
-                              {cat.label}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Comparte cómo clasificaste tus residuos, tu proceso de compostaje o tu jornada de limpieza..."
-                        className="min-h-[120px] bg-background"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex justify-between items-center">
-                <Button variant="outline" type="button" size="sm" className="gap-2">
-                  <ImageIcon className="h-4 w-4" />
-                  Subir Foto
-                </Button>
-                <Button type="submit" disabled={mutation.isPending} className="gap-2">
-                  {mutation.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4" />
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button size="lg" className="rounded-full gap-2 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all">
+              <Plus className="h-5 w-5" />
+              Publicar contenido
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[525px]">
+            <DialogHeader>
+              <DialogTitle>Compartir labor ambiental</DialogTitle>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit((v) => mutation.mutate(v))} className="space-y-4 pt-4">
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Categoría</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona una categoría" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id}>
+                              <div className="flex items-center gap-2">
+                                <cat.icon className="h-4 w-4" />
+                                {cat.label}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
                   )}
-                  Publicar
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+                />
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Comparte cómo clasificaste tus residuos, tu proceso de compostaje o tu jornada de limpieza..."
+                          className="min-h-[120px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex justify-between items-center pt-2">
+                  <Button variant="outline" type="button" size="sm" className="gap-2">
+                    <ImageIcon className="h-4 w-4" />
+                    Subir Foto
+                  </Button>
+                  <Button type="submit" disabled={mutation.isPending} className="gap-2">
+                    {mutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                    Publicar
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+      </motion.div>
 
       <div className="space-y-6">
         <AnimatePresence>
