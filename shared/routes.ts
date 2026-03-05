@@ -90,6 +90,29 @@ export const api = {
         200: z.array(z.custom<typeof users.$inferSelect>()),
       }
     }
+  },
+  posts: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/posts' as const,
+      responses: {
+        200: z.array(z.custom<any>()), // PostWithAuthor
+      }
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/posts' as const,
+      input: z.object({
+        content: z.string(),
+        category: z.string(),
+        imageBase64: z.string().optional(),
+      }),
+      responses: {
+        201: z.custom<any>(),
+        400: errorSchemas.validation,
+        401: errorSchemas.unauthorized,
+      }
+    }
   }
 };
 

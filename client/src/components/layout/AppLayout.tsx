@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
 import { 
   Home, MapPin, PlusCircle, Trophy, BookOpen, 
-  LogOut, User as UserIcon, Menu, X 
+  LogOut, User as UserIcon, Menu, X, Users
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 const navItems = [
   { href: "/dashboard", label: "Explorar", icon: MapPin },
   { href: "/create-report", label: "Reportar", icon: PlusCircle, primary: true },
-  { href: "/leaderboard", label: "Comunidad", icon: Trophy },
+  { href: "/community", label: "Muro", icon: Users },
+  { href: "/leaderboard", label: "Ranking", icon: Trophy },
   { href: "/education", label: "Aprende", icon: BookOpen },
 ];
 

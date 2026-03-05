@@ -16,6 +16,7 @@ import CreateReport from "@/pages/CreateReport";
 import ReportDetails from "@/pages/ReportDetails";
 import Leaderboard from "@/pages/Leaderboard";
 import Education from "@/pages/Education";
+import Community from "@/pages/Community";
 
 function Router() {
   return (
@@ -25,6 +26,7 @@ function Router() {
         <Route path="/auth" component={Auth} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/create-report" component={CreateReport} />
+        <Route path="/community" component={Community} />
         <Route path="/report/:id" component={ReportDetails} />
         <Route path="/leaderboard" component={Leaderboard} />
         <Route path="/education" component={Education} />

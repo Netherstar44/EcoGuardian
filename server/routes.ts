@@ -174,5 +174,34 @@ export async function registerRoutes(
     res.status(200).json(leaderboard.sort((a, b) => b.points - a.points));
   });
 
+  app.get(api.posts.list.path, async (req, res) => {
+    const posts = await storage.getPosts();
+    res.status(200).json(posts);
+  });
+
+  app.post(api.posts.create.path, requireAuth, async (req, res) => {
+    try {
+      const input = api.posts.create.input.parse(req.body);
+      const user = req.user as any;
+      
+      const imageUrl = input.imageBase64 ? "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg" : undefined;
+      
+      const post = await storage.createPost({
+        content: input.content,
+        category: input.category,
+        imageUrl,
+        userId: user.id
+      });
+      
+      await storage.updateUserPoints(user.id, 5);
+      res.status(201).json(post);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   return httpServer;
 }

@@ -71,6 +71,26 @@ export const commentsRelations = relations(comments, ({ one }) => ({
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, points: true, createdAt: true });
 export const insertReportSchema = createInsertSchema(reports).omit({ id: true, userId: true, status: true, createdAt: true });
 export const insertCommentSchema = createInsertSchema(comments).omit({ id: true, userId: true, createdAt: true });
+export const posts = pgTable("posts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  content: text("content").notNull(),
+  imageUrl: text("image_url"),
+  category: text("category").notNull(), // limpieza, clasificacion, compostaje, reciclaje
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const postsRelations = relations(posts, ({ one }) => ({
+  author: one(users, {
+    fields: [posts.userId],
+    references: [users.id],
+  }),
+}));
+
+export const insertPostSchema = createInsertSchema(posts).omit({ id: true, userId: true, createdAt: true });
+export type Post = typeof posts.$inferSelect;
+export type InsertPost = z.infer<typeof insertPostSchema>;
+export type PostWithAuthor = Post & { author: Pick<User, "id" | "name" | "points"> };
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;

@@ -37,3 +37,9 @@ author = "agent"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[userenv]
+
+[userenv.shared]
+CLOUDINARY_API_KEY = "121793616973461"
+CLOUDINARY_API_SECRET = "FYVEdB2gUxPSQluXD-A20oQn9Gk"
