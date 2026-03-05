@@ -1,0 +1,347 @@
+Desarrolla una aplicación web moderna enfocada en problemáticas ambientales en Colombia.
+La plataforma debe ser visualmente atractiva, profesional y completamente responsive (mobile-first), con una paleta de colores basada en tonos verdes (#1B5E20, #2E7D32, #66BB6A, blanco y gris claro).
+
+La versión inicial será Beta, con infraestructura ligera basada en NeonDB para la base de datos y Cloudinary para almacenamiento de imágenes.
+
+🌱 Objetivo del proyecto
+
+Crear una plataforma digital donde los ciudadanos puedan:
+
+Reportar problemas ambientales
+
+Visualizar datos ecológicos de su región
+
+Participar en acciones comunitarias
+
+Acceder a información ambiental
+
+Enfocado inicialmente en Colombia.
+
+🏗️ Arquitectura técnica
+Frontend
+
+Framework moderno:
+
+React + Vite (recomendado) o Next.js
+
+TailwindCSS
+
+Framer Motion para animaciones
+
+Chart.js o Recharts para datos
+
+Mapbox o Google Maps para geolocalización
+
+Características:
+
+UI moderna
+
+Animaciones suaves
+
+Diseño ecológico visualmente atractivo
+
+Mobile-first
+
+Backend
+
+Opciones:
+
+Node.js + Express
+o
+
+PHP + Slim 4
+
+Responsabilidades:
+
+API REST
+
+autenticación
+
+manejo de reportes
+
+conexión con NeonDB
+
+subida de imágenes a Cloudinary
+
+🗄️ Base de Datos
+
+Base de datos:
+
+NeonDB (PostgreSQL Serverless)
+
+Conexión usando variables de entorno:
+
+DATABASE_URL=postgresql://USER:PASSWORD@HOST/DATABASE
+
+Tablas principales:
+
+users
+id
+name
+email
+password_hash
+points
+created_at
+reports
+id
+user_id
+title
+description
+type
+location
+latitude
+longitude
+image_url
+status
+created_at
+comments
+id
+report_id
+user_id
+content
+created_at
+eco_points
+id
+user_id
+points
+reason
+created_at
+🖼️ Almacenamiento de imágenes
+
+Servicio:
+
+Cloudinary
+
+Uso:
+
+subir fotos de reportes ambientales
+
+optimizar imágenes automáticamente
+
+generar URLs CDN
+
+Configuración usando variables de entorno:
+
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+
+Flujo de subida:
+
+Usuario sube imagen
+
+Backend recibe archivo
+
+Backend lo envía a Cloudinary
+
+Cloudinary devuelve URL
+
+URL se guarda en NeonDB
+
+🌍 Secciones de la Web
+1️⃣ Landing Page
+
+Elementos:
+
+Hero con animación ambiental
+
+Fondo con partículas verdes
+
+CTA principales:
+
+"Reportar problema"
+
+"Explorar mapa"
+
+Animaciones con Framer Motion.
+
+2️⃣ Dashboard Ambiental
+
+Contendrá:
+
+mapa interactivo
+
+filtros por ciudad o departamento
+
+gráficos de datos ambientales
+
+Datos:
+
+calidad del aire
+
+reportes ciudadanos
+
+zonas afectadas
+
+3️⃣ Reporte Ambiental
+
+Formulario con:
+
+título
+
+descripción
+
+tipo de problema
+
+Tipos:
+
+basura
+
+contaminación de agua
+
+deforestación
+
+contaminación del aire
+
+Además:
+
+geolocalización automática
+
+subida de imagen
+
+preview de imagen
+
+confirmación animada
+
+4️⃣ Comunidad
+
+Incluye:
+
+perfiles de usuario
+
+ranking ecológico
+
+puntos por reportar problemas
+
+Gamificación:
+
+sistema de eco puntos
+
+5️⃣ Educación Ambiental
+
+Sección educativa con:
+
+artículos
+
+recursos descargables
+
+contenido educativo sobre sostenibilidad
+
+🎨 UI / UX
+
+Estilo:
+
+minimalista
+
+moderno
+
+ecológico
+
+Componentes:
+
+cards
+
+sombras suaves
+
+botones con microinteracciones
+
+bordes redondeados
+
+Animaciones:
+
+hover effects
+
+scroll animations
+
+transitions suaves
+
+Modo opcional:
+
+🌙 Dark Mode.
+
+📱 Responsive
+
+La aplicación debe ser:
+
+mobile-first
+
+adaptable a tablet
+
+adaptable a desktop
+
+Elementos clave:
+
+menú hamburguesa
+
+cards responsivas
+
+gráficos adaptables
+
+⚙️ Funcionalidades Beta
+
+registro/login
+
+sistema de reportes
+
+subida de imágenes
+
+mapa interactivo
+
+visualización de reportes
+
+perfil de usuario
+
+🚀 Funciones futuras (post-Beta)
+
+IA para clasificar basura en imágenes
+
+sistema de verificación comunitaria
+
+notificaciones push
+
+PWA instalable
+
+estadísticas nacionales
+
+integración con entidades ambientales
+
+📦 Estructura del proyecto
+
+Ejemplo:
+
+/project
+ /frontend
+ /backend
+ /routes
+ /controllers
+ /models
+ /services
+ /middlewares
+ /config
+ .env
+ README.md
+🔐 Seguridad
+
+Buenas prácticas:
+
+credenciales en .env
+
+hash de contraseñas con bcrypt
+
+validación de inputs
+
+rate limiting
+
+protección contra SQL Injection
+
+🎯 Objetivo final
+
+Crear una plataforma tecnológica ambiental para Colombia que:
+
+fomente participación ciudadana
+
+facilite reportes ambientales
+
+promueva educación ecológica
+
+permita escalar a nivel nacional.
