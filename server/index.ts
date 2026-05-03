@@ -3,8 +3,8 @@ import express, { type Request, Response, NextFunction } from "express";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import { registerRoutes } from "./routes";
-import { serveStatic } from "./static";
+import { registerRoutes } from "./routes.js";
+import { serveStatic } from "./static.js";
 import { createServer } from "http";
 
 const app = express();
@@ -128,7 +128,7 @@ app.use((req, res, next) => {
   if (process.env.NODE_ENV === "production" && process.env.VERCEL !== "1") {
     serveStatic(app);
   } else if (process.env.NODE_ENV !== "production") {
-    const { setupVite } = await import("./vite");
+    const { setupVite } = await import("./vite.js");
     await setupVite(httpServer, app);
   }
 

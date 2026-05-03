@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertReportSchema, insertCommentSchema, insertUserSchema, reports, users, comments, insertPostCommentSchema, postReactionTypeSchema, insertFriendshipSchema, insertCarbonFootprintSchema, insertMarketplaceProductSchema, insertReelSchema, insertReelCommentSchema, insertReelReactionSchema, insertMinigameSchema, insertGameHistorySchema, reelReactionTypeSchema } from './schema';
+import { insertReportSchema, insertCommentSchema, insertUserSchema, reports, users, comments, insertPostCommentSchema, postReactionTypeSchema, insertFriendshipSchema, insertCarbonFootprintSchema, insertMarketplaceProductSchema, insertReelSchema, insertReelCommentSchema, insertReelReactionSchema, insertMinigameSchema, insertGameHistorySchema, reelReactionTypeSchema } from "./schema.js";
 
 export const errorSchemas = {
   validation: z.object({ message: z.string(), field: z.string().optional() }),

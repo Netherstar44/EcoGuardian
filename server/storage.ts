@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { db } from "./db.js";
 import { eq, desc, and, or, lte, gte, like, ilike, sql, SQL } from "drizzle-orm";
 import {
   users, reports, comments, ecoPoints, posts, chatConversations,
@@ -15,7 +15,7 @@ import {
   type MarketplaceProduct, type Reel, type ReelWithAuthor,
   type ReelComment, type ReelCommentWithAuthor, type ReelReaction,
   type Minigame, type GameHistory
-} from "@shared/schema";
+} from "../shared/schema.js";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;

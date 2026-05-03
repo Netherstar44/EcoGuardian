@@ -1,18 +1,18 @@
 import type { Express } from "express";
 import type { Server } from "http";
-import { storage } from "./storage";
-import { api } from "@shared/routes";
+import { storage } from "./storage.js";
+import { api } from "../shared/routes.js";
 import { z } from "zod";
-import type { User } from "@shared/schema";
+import type { User } from "../shared/schema.js";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as GoogleStrategy, type Profile } from "passport-google-oauth20";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { pool } from "./db";
+import { pool } from "./db.js";
 import multer from "multer";
-import cloudinary from "./cloudinary";
-import { uploadToCloudinary } from "./cloudinary";
+import cloudinary from "./cloudinary.js";
+import { uploadToCloudinary } from "./cloudinary.js";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 
