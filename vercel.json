@@ -4,7 +4,10 @@
   "builds": [
     {
       "src": "api/index.ts",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "bundle": true
+      }
     },
     {
       "src": "package.json",
