@@ -5,10 +5,9 @@ const config: CapacitorConfig = {
   appName: 'EcoGuardian',
   webDir: 'dist/public',
   server: {
-    // Load the app directly from the dev server — all relative /api paths work automatically
-    url: 'http://192.168.0.20:3000',
+    // Load the app directly from Vercel — all relative /api paths work automatically
+    url: 'https://eco-guardian-sand.vercel.app',
     cleartext: true,
-    androidScheme: 'http',
   },
 };
 
