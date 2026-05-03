@@ -84,6 +84,43 @@ export default function Education() {
           </motion.div>
         ))}
       </div>
+
+      {/* Sección de Creadores */}
+      <div className="mt-20 pt-20 border-t border-border/50">
+        <div className="flex flex-col items-center mb-12">
+          <h2 className="text-4xl font-display font-bold text-foreground text-center mb-3">
+            Los Guardianes de EcoGuardian
+          </h2>
+          <p className="text-muted-foreground text-lg text-center max-w-2xl">
+            Conoce al equipo de desarrolladores apasionados por proteger nuestro planeta
+          </p>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+          className="relative max-w-4xl mx-auto"
+        >
+          {/* Borde gradiente decorativo */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/20 to-green-500/30 rounded-3xl blur-xl -z-10" />
+          
+          {/* Borde alusivo con efecto eco */}
+          <div className="p-1 rounded-3xl bg-gradient-to-br from-primary via-accent to-green-500">
+            <div className="rounded-3xl overflow-hidden bg-background">
+              <img 
+                src="/creators.png" 
+                alt="Equipo de desarrolladores de EcoGuardian" 
+                className="w-full h-auto object-cover rounded-3xl hover:scale-105 transition-transform duration-700"
+              />
+            </div>
+          </div>
+
+          {/* Decoración de hojas */}
+          <div className="absolute -top-4 -left-4 text-primary opacity-50 text-3xl">🌿</div>
+          <div className="absolute -bottom-4 -right-4 text-accent opacity-50 text-3xl">🍃</div>
+        </motion.div>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
+import 'dotenv/config';
 import { db } from "../server/db";
-import { users, reports, ecoPoints } from "../shared/schema";
+import { users, reports, ecoPoints, posts } from "../shared/schema";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
 
@@ -14,6 +15,7 @@ async function hashPassword(password: string) {
 async function runSeed() {
   console.log("Checking if seeding is needed...");
   const existingUsers = await db.select().from(users);
+  const existingPosts = await db.select().from(posts);
   
   if (existingUsers.length === 0) {
     console.log("Seeding database...");
@@ -63,10 +65,77 @@ async function runSeed() {
       { userId: user1.id, points: 50, reason: "Reporte de basura y 4 comentarios de apoyo" },
       { userId: user2.id, points: 120, reason: "Múltiples reportes verificados" }
     ]);
+
+    // Seed posts for search testing
+    await db.insert(posts).values([
+      {
+        authorId: user1.id,
+        content: "¡Hola a todos! Hoy participé en una jornada de limpieza en el parque. ¡Fue increíble ver cómo entre todos podemos hacer la diferencia! #EcoGuardian #LimpiezaAmbiental",
+        category: "limpieza"
+      },
+      {
+        authorId: user2.id,
+        content: "Comparto esta foto de un río contaminado que reporté hace una semana. Las autoridades ya están trabajando en la solución. ¡Sigamos reportando! 🌊♻️",
+        category: "contaminación de agua"
+      },
+      {
+        authorId: user1.id,
+        content: "Tips para reciclar correctamente: 1. Separa los materiales, 2. Lava los envases, 3. Usa los contenedores adecuados. ¡Cada pequeño gesto cuenta! 📚♻️",
+        category: "reciclaje"
+      },
+      {
+        authorId: user2.id,
+        content: "Organizando una jornada de compostaje comunitario este sábado. ¿Quién se une? Necesitamos voluntarios para enseñar a los vecinos. 🗓️🌱",
+        category: "compostaje"
+      },
+      {
+        authorId: user1.id,
+        content: "¡Felicitaciones a todos los EcoGuardianes que han alcanzado el nivel 5! Sus reportes están ayudando a mejorar nuestras comunidades. 👏🏆",
+        category: "comunidad"
+      }
+    ]);
     
     console.log("Seeding complete!");
+  } else if (existingPosts.length === 0) {
+    console.log("Adding posts to existing database...");
+    
+    // Get existing users
+    const [user1, user2] = existingUsers.slice(0, 2);
+    
+    if (user1 && user2) {
+      // Seed posts for search testing
+      await db.insert(posts).values([
+        {
+          authorId: user1.id,
+          content: "¡Hola a todos! Hoy participé en una jornada de limpieza en el parque. ¡Fue increíble ver cómo entre todos podemos hacer la diferencia! #EcoGuardian #LimpiezaAmbiental",
+          category: "limpieza"
+        },
+        {
+          authorId: user2.id,
+          content: "Comparto esta foto de un río contaminado que reporté hace una semana. Las autoridades ya están trabajando en la solución. ¡Sigamos reportando! 🌊♻️",
+          category: "contaminación de agua"
+        },
+        {
+          authorId: user1.id,
+          content: "Tips para reciclar correctamente: 1. Separa los materiales, 2. Lava los envases, 3. Usa los contenedores adecuados. ¡Cada pequeño gesto cuenta! 📚♻️",
+          category: "reciclaje"
+        },
+        {
+          authorId: user2.id,
+          content: "Organizando una jornada de compostaje comunitario este sábado. ¿Quién se une? Necesitamos voluntarios para enseñar a los vecinos. 🗓️🌱",
+          category: "compostaje"
+        },
+        {
+          authorId: user1.id,
+          content: "¡Felicitaciones a todos los EcoGuardianes que han alcanzado el nivel 5! Sus reportes están ayudando a mejorar nuestras comunidades. 👏🏆",
+          category: "comunidad"
+        }
+      ]);
+      
+      console.log("Posts added!");
+    }
   } else {
-    console.log("Database already seeded.");
+    console.log("Database already seeded with posts.");
   }
 }
 

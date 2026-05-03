@@ -2,8 +2,11 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Leaf, Shield, Users, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Home() {
+  const { user } = useAuth();
+
   return (
     <div className="flex flex-col items-center min-h-[80vh] py-12">
       {/* Hero Section */}
@@ -27,7 +30,7 @@ export default function Home() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/create-report">
+            <Link href={user ? "/create-report" : "/auth"}>
               <Button size="lg" className="w-full sm:w-auto text-lg px-8 rounded-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-1 transition-all h-14">
                 Reportar Problema <ArrowRight className="ml-2 h-5 w-5" />
               </Button>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,9 +10,8 @@ import { LocationPicker } from "@/components/ui/LocationPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, MapPin, UploadCloud } from "lucide-react";
+import { MapPin, UploadCloud } from "lucide-react";
 
-// Use partial schema rules but strict for form
 const reportSchema = z.object({
   title: z.string().min(5, "El título debe ser más descriptivo"),
   description: z.string().min(10, "Describe un poco más el problema"),
@@ -24,10 +23,10 @@ const reportSchema = z.object({
 
 export default function CreateReport() {
   const [, setLocation] = useLocation();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { mutateAsync: createReport, isPending } = useCreateReport();
   const { toast } = useToast();
-  
+
   const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
   const [imageStr, setImageStr] = useState<string | null>(null);
 
@@ -35,10 +34,28 @@ export default function CreateReport() {
     resolver: zodResolver(reportSchema),
   });
 
-  if (!user) {
-    setLocation("/auth");
-    return null;
+  // Wait for auth to finish loading, then redirect if not logged in
+  useEffect(() => {
+    if (!authLoading && user === null) {
+      toast({
+        title: "Inicia sesión primero",
+        description: "Necesitas una cuenta para crear reportes.",
+      });
+      setLocation("/auth");
+    }
+  }, [authLoading, user, setLocation, toast]);
+
+  // Show spinner while auth is loading
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
   }
+
+  // Auth loaded and user is null — useEffect will redirect, show nothing
+  if (user === null) return null;
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -48,9 +65,7 @@ export default function CreateReport() {
         return;
       }
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageStr(reader.result as string);
-      };
+      reader.onloadend = () => setImageStr(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -60,7 +75,6 @@ export default function CreateReport() {
       toast({ variant: "destructive", title: "Ubicación requerida", description: "Por favor marca el punto en el mapa." });
       return;
     }
-
     try {
       await createReport({
         ...data,
@@ -76,7 +90,7 @@ export default function CreateReport() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto animate-in slide-in-from-bottom-4 duration-500 pb-12">
+    <div className="max-w-3xl mx-auto animate-in slide-in-from-bottom-4 duration-500 pb-12 px-4">
       <div className="mb-8 text-center md:text-left">
         <h1 className="text-3xl font-display font-bold text-foreground">Reportar Problema</h1>
         <p className="text-muted-foreground mt-2">Ayuda a tu comunidad documentando incidencias ambientales.</p>
@@ -84,11 +98,11 @@ export default function CreateReport() {
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="bg-card p-6 md:p-8 rounded-3xl shadow-lg border border-border space-y-6">
-          
+
           <div className="space-y-2">
             <label className="text-sm font-bold text-foreground">Título del reporte</label>
-            <Input 
-              placeholder="Ej: Basurero clandestino en el parque" 
+            <Input
+              placeholder="Ej: Basurero clandestino en el parque"
               className="h-12 bg-background rounded-xl focus-visible:ring-primary"
               {...form.register("title")}
             />
@@ -97,7 +111,7 @@ export default function CreateReport() {
 
           <div className="space-y-2">
             <label className="text-sm font-bold text-foreground">Categoría</label>
-            <select 
+            <select
               className="w-full h-12 px-4 rounded-xl bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
               {...form.register("type")}
             >
@@ -112,8 +126,8 @@ export default function CreateReport() {
 
           <div className="space-y-2">
             <label className="text-sm font-bold text-foreground">Descripción detallada</label>
-            <Textarea 
-              placeholder="Describe lo que ves, desde cuándo está el problema, etc..." 
+            <Textarea
+              placeholder="Describe lo que ves, desde cuándo está el problema, etc..."
               className="min-h-[120px] bg-background rounded-xl focus-visible:ring-primary resize-none"
               {...form.register("description")}
             />
@@ -133,7 +147,7 @@ export default function CreateReport() {
                   <>
                     <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
                     <div className="flex text-sm text-muted-foreground justify-center">
-                      <label className="relative cursor-pointer bg-transparent rounded-md font-semibold text-primary hover:text-primary/80 focus-within:outline-none">
+                      <label className="relative cursor-pointer font-semibold text-primary hover:text-primary/80">
                         <span>Sube un archivo</span>
                         <input type="file" accept="image/*" className="sr-only" onChange={handleImageChange} />
                       </label>
@@ -145,7 +159,6 @@ export default function CreateReport() {
               </div>
             </div>
           </div>
-
         </div>
 
         <div className="bg-card p-6 md:p-8 rounded-3xl shadow-lg border border-border space-y-6">
@@ -153,24 +166,21 @@ export default function CreateReport() {
             <label className="text-sm font-bold text-foreground flex items-center gap-2">
               <MapPin className="h-4 w-4 text-primary" /> Ubicación
             </label>
-            <Input 
-              placeholder="Dirección o barrio (Ej: Carrera 7 # 45, Chapinero)" 
+            <Input
+              placeholder="Dirección o barrio (Ej: Carrera 7 # 45, Chapinero)"
               className="h-12 bg-background rounded-xl focus-visible:ring-primary mb-4"
               {...form.register("location")}
             />
             {form.formState.errors.location && <p className="text-xs text-destructive px-1 mb-4">{form.formState.errors.location.message}</p>}
-            
-            <LocationPicker 
-              onLocationSelect={(lat, lng) => setCoordinates([lat, lng])} 
-            />
+            <LocationPicker onLocationSelect={(lat, lng) => setCoordinates([lat, lng])} />
             {!coordinates && <p className="text-xs text-destructive mt-2">Haz clic en el mapa para confirmar las coordenadas exactas.</p>}
           </div>
         </div>
 
-        <div className="flex justify-end pt-4 pb-12">
-          <Button 
-            type="submit" 
-            disabled={isPending} 
+        <div className="flex justify-end pb-4 md:pb-12">
+          <Button
+            type="submit"
+            disabled={isPending}
             className="w-full md:w-auto h-14 px-10 text-lg font-bold rounded-full bg-gradient-to-r from-primary to-accent hover:shadow-lg hover:shadow-primary/30 transition-all hover:-translate-y-1"
           >
             {isPending ? "Enviando Reporte..." : "Publicar Reporte"}

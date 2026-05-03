@@ -5,7 +5,7 @@ import { useState } from "react";
 import { MapDisplay } from "@/components/reports/MapDisplay";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ArrowLeft, MessageSquare, MapPin, User, Send, ShieldAlert } from "lucide-react";
+import { ArrowLeft, MessageSquare, MapPin, User, Send, ShieldAlert, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 

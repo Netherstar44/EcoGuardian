@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useReports } from "@/hooks/use-reports";
 import { MapDisplay } from "@/components/reports/MapDisplay";
 import { Link } from "wouter";
@@ -10,6 +10,55 @@ import { Button } from "@/components/ui/button";
 export default function Dashboard() {
   const { data: reports = [], isLoading } = useReports();
   const [view, setView] = useState<"map" | "list">("map");
+  const [mapScale, setMapScale] = useState<"pais" | "municipio" | "comuna" | "barrio">("pais");
+  const [userLoc, setUserLoc] = useState<[number, number] | null>(null);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserLoc([pos.coords.latitude, pos.coords.longitude]),
+        () => setUserLoc([4.6097, -74.0817])
+      );
+    } else {
+      setUserLoc([4.6097, -74.0817]);
+    }
+  }, []);
+
+  const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  const filteredReports = useMemo(() => {
+    if (mapScale === "pais" || !userLoc) return reports;
+    let maxDistance = 0;
+    if (mapScale === "barrio") maxDistance = 2; // km
+    else if (mapScale === "comuna") maxDistance = 5;
+    else if (mapScale === "municipio") maxDistance = 20;
+
+    return reports.filter((r: any) => {
+      const lat = Number(r.latitude);
+      const lng = Number(r.longitude);
+      if (isNaN(lat) || isNaN(lng)) return true; // fallback
+      const dist = getDistance(userLoc[0], userLoc[1], lat, lng);
+      return dist <= maxDistance;
+    });
+  }, [reports, mapScale, userLoc]);
+
+  const getZoomLevel = () => {
+    switch(mapScale) {
+      case "barrio": return 15;
+      case "comuna": return 13;
+      case "municipio": return 11;
+      case "pais": default: return 5;
+    }
+  };
 
   if (isLoading) {
     return (
@@ -21,7 +70,7 @@ export default function Dashboard() {
   }
 
   // Data for charts
-  const typeCounts = reports.reduce((acc: any, report: any) => {
+  const typeCounts = filteredReports.reduce((acc: any, report: any) => {
     acc[report.type] = (acc[report.type] || 0) + 1;
     return acc;
   }, {});
@@ -50,7 +99,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main View Area (Map/List) */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between bg-card p-2 rounded-2xl shadow-sm border border-border">
+          <div className="flex flex-col sm:flex-row items-center justify-between bg-card p-2 rounded-2xl shadow-sm border border-border gap-4">
             <div className="flex gap-2 w-full sm:w-auto">
               <Button 
                 variant={view === "map" ? "default" : "ghost"} 
@@ -67,19 +116,56 @@ export default function Dashboard() {
                 Vista Lista
               </Button>
             </div>
+            {view === "map" && (
+              <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+                <span className="text-sm font-medium text-muted-foreground mr-1 whitespace-nowrap">Escala:</span>
+                <Button 
+                  size="sm" 
+                  variant={mapScale === "pais" ? "secondary" : "ghost"} 
+                  onClick={() => setMapScale("pais")}
+                  className="rounded-lg text-xs"
+                >
+                  País
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant={mapScale === "municipio" ? "secondary" : "ghost"} 
+                  onClick={() => setMapScale("municipio")}
+                  className="rounded-lg text-xs"
+                >
+                  Municipio
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant={mapScale === "comuna" ? "secondary" : "ghost"} 
+                  onClick={() => setMapScale("comuna")}
+                  className="rounded-lg text-xs"
+                >
+                  Comuna
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant={mapScale === "barrio" ? "secondary" : "ghost"} 
+                  onClick={() => setMapScale("barrio")}
+                  className="rounded-lg text-xs"
+                >
+                  Barrio
+                </Button>
+              </div>
+            )}
           </div>
 
-          <div className="bg-card rounded-3xl p-2 shadow-lg shadow-black/5 border border-border h-[500px]">
+          <div className="bg-card rounded-3xl p-2 shadow-lg shadow-black/5 border border-border h-[350px] md:h-[500px]">
             {view === "map" ? (
-              <MapDisplay reports={reports} />
+              <MapDisplay reports={filteredReports} zoom={getZoomLevel()} center={userLoc || [4.6097, -74.0817]} />
             ) : (
               <div className="h-full overflow-y-auto pr-2 space-y-4 p-2 custom-scrollbar">
-                {reports.length === 0 ? (
+                {filteredReports.length === 0 ? (
                   <div className="h-full flex items-center justify-center text-muted-foreground">
-                    No hay reportes todavía. ¡Sé el primero!
+                    No hay reportes en esta zona todavía. ¡Sé el primero!
                   </div>
                 ) : (
-                  reports.map((report: any) => (
+                  filteredReports.map((report: any) => (
                     <ReportListItem key={report.id} report={report} />
                   ))
                 )}
@@ -113,7 +199,7 @@ export default function Dashboard() {
 
           <div className="bg-gradient-to-br from-primary to-accent rounded-3xl p-6 shadow-lg text-primary-foreground">
             <h3 className="font-display font-bold text-xl mb-2">Total de Reportes</h3>
-            <p className="text-5xl font-black">{reports.length}</p>
+            <p className="text-5xl font-black">{filteredReports.length}</p>
             <p className="opacity-80 mt-2 text-sm">Ayudando a limpiar nuestro país, un reporte a la vez.</p>
           </div>
         </div>

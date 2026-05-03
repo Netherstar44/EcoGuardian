@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">EcoGuardian</string>
+    <string name="title_activity_main">EcoGuardian</string>
+    <string name="package_name">com.ecoguardian.app</string>
+    <string name="custom_url_scheme">com.ecoguardian.app</string>
+</resources>
