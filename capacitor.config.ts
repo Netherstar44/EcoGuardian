@@ -5,9 +5,6 @@ const config: CapacitorConfig = {
   appName: 'EcoGuardian',
   webDir: 'dist/public',
   server: {
-    // Load the app directly from Vercel — all relative /api paths work automatically
-    url: 'https://eco-guardian-sand.vercel.app',
-    allowNavigation: ['eco-guardian-sand.vercel.app'],
     cleartext: true,
   },
   plugins: {

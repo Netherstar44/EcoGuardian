@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@shared/routes";
+import { apiRequest } from "@/lib/queryClient";
 import type { z } from "zod";
 
 type LoginInput = z.infer<typeof api.auth.login.input>;
@@ -11,26 +12,20 @@ export function useAuth() {
   const { data: user, isLoading, error } = useQuery({
     queryKey: [api.auth.me.path],
     queryFn: async () => {
-      const res = await fetch(api.auth.me.path, { credentials: "include" });
-      if (res.status === 401) return null;
-      if (!res.ok) throw new Error("Failed to fetch user");
-      return res.json();
+      try {
+        const res = await apiRequest("GET", api.auth.me.path);
+        return await res.json();
+      } catch (e: any) {
+        if (e.message.includes("401")) return null;
+        throw e;
+      }
     },
     staleTime: Infinity,
   });
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginInput) => {
-      const res = await fetch(api.auth.login.path, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Failed to login");
-      }
+      const res = await apiRequest("POST", api.auth.login.path, credentials);
       return res.json();
     },
     onSuccess: () => {
@@ -40,16 +35,7 @@ export function useAuth() {
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterInput) => {
-      const res = await fetch(api.auth.register.path, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Failed to register");
-      }
+      const res = await apiRequest("POST", api.auth.register.path, data);
       return res.json();
     },
     onSuccess: () => {
@@ -59,7 +45,7 @@ export function useAuth() {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await fetch(api.auth.logout.path, { method: "POST", credentials: "include" });
+      await apiRequest("POST", api.auth.logout.path);
     },
     onSuccess: () => {
       queryClient.setQueryData([api.auth.me.path], null);
