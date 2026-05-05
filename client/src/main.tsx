@@ -15,7 +15,8 @@ GoogleAuth.initialize({
 import { Capacitor } from '@capacitor/core';
 
 if (Capacitor.isNativePlatform() || navigator.userAgent.includes('wv')) {
-  StatusBar.hide().catch(console.error);
+  StatusBar.setOverlaysWebView({ overlay: true }).catch(console.error);
+  StatusBar.setBackgroundColor({ color: '#00000000' }).catch(console.error);
 }
 
 createRoot(document.getElementById("root")!).render(<App />);

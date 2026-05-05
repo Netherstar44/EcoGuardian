@@ -359,8 +359,8 @@ export default function Reels() {
                 </button>
               )}
 
-              {/* Video Info — bottom left overlay */}
-              <div className="absolute bottom-0 left-0 right-16 bg-gradient-to-t from-black/80 to-transparent p-4 pr-2">
+              {/* Video Info — bottom left overlay, above bottom nav */}
+              <div className="absolute bottom-16 left-0 right-16 bg-gradient-to-t from-black/80 to-transparent p-4 pr-2">
                 <p className="text-xs font-semibold text-blue-400 mb-1">{currentReel.category}</p>
                 <h2 className="text-base font-bold text-white mb-1 leading-tight">{currentReel.title}</h2>
                 <p className="text-xs text-gray-300 line-clamp-2">{currentReel.description}</p>
@@ -372,7 +372,7 @@ export default function Reels() {
 
               {/* Actions — overlay on right side (TikTok/Instagram style) */}
               {!showComments && (
-                <div className="absolute right-2 bottom-16 flex flex-col items-center gap-5 z-10">
+                <div className="absolute right-2 bottom-32 flex flex-col items-center gap-5 z-10">
                   <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={() => likeReelMutation.mutate()}

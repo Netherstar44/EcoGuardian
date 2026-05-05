@@ -7,7 +7,7 @@ import {
   ShoppingCart, Film, Zap, Bell, User, UserPlus,
   CloudSun, Home, PlusCircle, MessageCircle, Check,
   ChevronDown, ChevronUp, Settings, HelpCircle, Briefcase,
-  Clock, Bookmark, Rss, Search, Moon, Sun
+  Clock, Bookmark, Rss, Search, Moon, Sun, Mail
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -403,23 +403,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </button>
               )}
 
-              {/* Notifications / Alertas — mobile only */}
+              {/* Notifications — mobile only, navigates to /friends */}
               {isLoggedIn && (
-                <button
-                  className="md:hidden p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground relative"
-                  onClick={() => setIsMobileMenuOpen(true)} // Or we can route to /friends or a modal. Let's just open menu for now, or maybe a dedicated modal later. Actually he said "o en este caso se veria como otra seccion, tipo facebook". We can link to /friends where requests are.
-                >
-                  <Link href="/friends">
-                    <div className="relative">
-                      <Bell className="h-5 w-5" />
-                      {pendingCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 leading-none">
-                          {pendingCount > 9 ? "9+" : pendingCount}
-                        </span>
-                      )}
-                    </div>
-                  </Link>
-                </button>
+                <Link href="/friends">
+                  <div className="md:hidden p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground relative">
+                    <Bell className="h-5 w-5" />
+                    {pendingCount > 0 && (
+                      <span className="absolute top-0.5 right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 leading-none">
+                        {pendingCount > 9 ? "9+" : pendingCount}
+                      </span>
+                    )}
+                  </div>
+                </Link>
               )}
 
               {/* Hamburger — mobile only */}
@@ -461,7 +456,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           {/* Mensajes */}
           <Link href="/messages">
             <div className={`flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all ${location === "/messages" ? "text-primary" : "text-muted-foreground"}`}>
-              <MessageCircle className="h-6 w-6" />
+              <Mail className="h-6 w-6" />
               <span className="text-[10px] font-medium">Mensajes</span>
             </div>
           </Link>
