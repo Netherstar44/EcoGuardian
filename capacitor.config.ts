@@ -8,9 +8,15 @@ const config: CapacitorConfig = {
     cleartext: true,
   },
   plugins: {
+    CapacitorHttp: {
+      enabled: true,
+    },
+    CapacitorCookies: {
+      enabled: true,
+    },
     GoogleAuth: {
       scopes: ["profile", "email"],
-      serverClientId: "88091990755-v6k744gs1f75423juad1p66q7ga49vpn.apps.googleusercontent.com",
+      serverClientId: "88091990755-cafbvvp1f5f5nidrp6nuu0rlsn33l6cb.apps.googleusercontent.com",
       forceCodeForRefreshToken: true
     }
   }

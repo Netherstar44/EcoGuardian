@@ -7,7 +7,7 @@ import { StatusBar } from '@capacitor/status-bar';
 
 // Inicializa el plugin de Google Auth
 GoogleAuth.initialize({
-  clientId: '88091990755-v6k744gs1f75423juad1p66q7ga49vpn.apps.googleusercontent.com',
+  clientId: '88091990755-cafbvvp1f5f5nidrp6nuu0rlsn33l6cb.apps.googleusercontent.com',
   scopes: ['profile', 'email'],
   grantOfflineAccess: true,
 });
