@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Leaf } from "lucide-react";
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="h-5 w-5 flex-shrink-0" aria-hidden="true">
@@ -34,9 +35,32 @@ export default function Auth() {
   const { login, register, isLoggingIn, isRegistering } = useAuth();
   const { toast } = useToast();
 
-  const handleGoogleAuth = () => {
-    // Inicia el flujo OAuth en el backend
-    window.location.href = "/api/auth/google";
+  const handleGoogleAuth = async () => {
+    if ((window as any).Capacitor?.isNative) {
+      try {
+        const result = await GoogleAuth.signIn();
+        if (result && result.email) {
+          const res = await fetch("/api/auth/google/native", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: result.email, name: result.name })
+          });
+          if (res.ok) {
+            toast({ title: "¡Bienvenido!", description: "Has iniciado sesión con Google exitosamente." });
+            window.location.href = "/dashboard";
+          } else {
+            const data = await res.json();
+            toast({ variant: "destructive", title: "Error", description: data.message || "Error al iniciar sesión con Google." });
+          }
+        }
+      } catch (err: any) {
+        console.error("Google Auth Error:", err);
+        toast({ variant: "destructive", title: "Error", description: "Error en Google Auth: " + (err.message || "desconocido") });
+      }
+    } else {
+      // Inicia el flujo OAuth en el backend
+      window.location.href = "/api/auth/google";
+    }
   };
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
@@ -130,26 +154,22 @@ export default function Auth() {
                 <Button type="submit" disabled={isLoggingIn} className="w-full h-12 rounded-xl text-md font-semibold bg-primary hover:bg-primary/90 shadow-md">
                   {isLoggingIn ? "Ingresando..." : "Ingresar"}
                 </Button>
-                {!((window as any).Capacitor?.isNative) && (
-                  <>
-                    <div className="relative my-1">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-border" />
-                      </div>
-                      <div className="relative flex justify-center text-xs">
-                        <span className="bg-card px-3 text-muted-foreground">o continúa con</span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleGoogleAuth}
-                      className="w-full h-12 flex items-center justify-center gap-3 rounded-xl border border-border bg-background hover:bg-muted/60 transition-colors text-sm font-semibold text-foreground shadow-sm active:scale-[0.98]"
-                    >
-                      <GoogleIcon />
-                      Ingresar con Google
-                    </button>
-                  </>
-                )}
+                <div className="relative my-1">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="bg-card px-3 text-muted-foreground">o continúa con</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleGoogleAuth}
+                  className="w-full h-12 flex items-center justify-center gap-3 rounded-xl border border-border bg-background hover:bg-muted/60 transition-colors text-sm font-semibold text-foreground shadow-sm active:scale-[0.98]"
+                >
+                  <GoogleIcon />
+                  Ingresar con Google
+                </button>
               </motion.form>
             ) : (
               <motion.form
@@ -190,26 +210,22 @@ export default function Auth() {
                 <Button type="submit" disabled={isRegistering} className="w-full h-12 rounded-xl text-md font-semibold bg-primary hover:bg-primary/90 shadow-md">
                   {isRegistering ? "Creando cuenta..." : "Crear Cuenta"}
                 </Button>
-                {!((window as any).Capacitor?.isNative) && (
-                  <>
-                    <div className="relative my-1">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-border" />
-                      </div>
-                      <div className="relative flex justify-center text-xs">
-                        <span className="bg-card px-3 text-muted-foreground">o regístrate con</span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleGoogleAuth}
-                      className="w-full h-12 flex items-center justify-center gap-3 rounded-xl border border-border bg-background hover:bg-muted/60 transition-colors text-sm font-semibold text-foreground shadow-sm active:scale-[0.98]"
-                    >
-                      <GoogleIcon />
-                      Registrarse con Google
-                    </button>
-                  </>
-                )}
+                <div className="relative my-1">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="bg-card px-3 text-muted-foreground">o regístrate con</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleGoogleAuth}
+                  className="w-full h-12 flex items-center justify-center gap-3 rounded-xl border border-border bg-background hover:bg-muted/60 transition-colors text-sm font-semibold text-foreground shadow-sm active:scale-[0.98]"
+                >
+                  <GoogleIcon />
+                  Registrarse con Google
+                </button>
               </motion.form>
             )}
           </AnimatePresence>

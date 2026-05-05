@@ -179,6 +179,36 @@ export async function registerRoutes(
     }
   );
 
+  app.post("/api/auth/google/native", async (req, res, next) => {
+    try {
+      const { email, name } = req.body;
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      let user = await storage.getUserByEmail(email);
+
+      if (!user) {
+        const randomPassword = randomBytes(32).toString("hex");
+        const hashedPassword = await hashPassword(randomPassword);
+
+        user = await storage.createUser({
+          name: name || "Usuario EcoGuardián",
+          email,
+          password: hashedPassword,
+        });
+      }
+
+      req.login(user, (err) => {
+        if (err) return next(err);
+        return res.status(200).json(user);
+      });
+    } catch (err) {
+      console.error("[NATIVE GOOGLE AUTH ERROR]", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.post(api.auth.logout.path, (req, res, next) => {
     req.logout((err) => {
       if (err) return next(err);
