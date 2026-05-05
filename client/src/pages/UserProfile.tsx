@@ -911,7 +911,7 @@ function PostReactions({ postId }: { postId: number }) {
   const { data } = useQuery<{ counts: Record<string, number>; userReaction: string | null }>({
     queryKey: [reactionsUrl],
     queryFn: async () => {
-      const res = await fetch(reactionsUrl, { credentials: "include" });
+      const res = await fetch(apiBase + reactionsUrl, { credentials: "include" });
       if (!res.ok) return { counts: {}, userReaction: null } as any;
       return res.json();
     },
@@ -1125,7 +1125,7 @@ function PostReactionCounts({ postId, onCommentsClick }: { postId: number; onCom
   const { data: reactData } = useQuery<{ counts: Record<string, number>; userReaction: string | null }>({
     queryKey: [reactionsUrl],
     queryFn: async () => {
-      const res = await fetch(reactionsUrl, { credentials: "include" });
+      const res = await fetch(apiBase + reactionsUrl, { credentials: "include" });
       if (!res.ok) return { counts: {}, userReaction: null } as any;
       return res.json();
     },
@@ -1134,7 +1134,7 @@ function PostReactionCounts({ postId, onCommentsClick }: { postId: number; onCom
   const { data: commentsData } = useQuery<any[]>({
     queryKey: [commentsUrl],
     queryFn: async () => {
-      const res = await fetch(commentsUrl, { credentials: "include" });
+      const res = await fetch(apiBase + commentsUrl, { credentials: "include" });
       if (!res.ok) return [] as any[];
       return res.json();
     },
@@ -1189,7 +1189,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
   const { data, isLoading } = useQuery<any[]>({
     queryKey: [commentsUrl],
     queryFn: async () => {
-      const res = await fetch(commentsUrl, { credentials: "include" });
+      const res = await fetch(apiBase + commentsUrl, { credentials: "include" });
       if (!res.ok) return [] as any[];
       return res.json();
     },

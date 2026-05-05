@@ -403,6 +403,25 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </button>
               )}
 
+              {/* Notifications / Alertas — mobile only */}
+              {isLoggedIn && (
+                <button
+                  className="md:hidden p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground relative"
+                  onClick={() => setIsMobileMenuOpen(true)} // Or we can route to /friends or a modal. Let's just open menu for now, or maybe a dedicated modal later. Actually he said "o en este caso se veria como otra seccion, tipo facebook". We can link to /friends where requests are.
+                >
+                  <Link href="/friends">
+                    <div className="relative">
+                      <Bell className="h-5 w-5" />
+                      {pendingCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 leading-none">
+                          {pendingCount > 9 ? "9+" : pendingCount}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                </button>
+              )}
+
               {/* Hamburger — mobile only */}
               <button
                 className="md:hidden p-2 rounded-full hover:bg-muted transition-colors text-foreground"
@@ -447,31 +466,21 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           </Link>
 
-          {/* Notificaciones — con badge */}
-          <button
-            className="flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all text-muted-foreground relative"
-            onClick={() => setIsMobileMenuOpen(v => !v)}
-          >
-            <div className="relative">
-              <Bell className="h-6 w-6" />
-              {pendingCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 leading-none">
-                  {pendingCount > 9 ? "9+" : pendingCount}
-                </span>
-              )}
+          {/* EcoReels (Replaces Alertas) */}
+          <Link href="/reels">
+            <div className={`flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all ${location === "/reels" ? "text-primary" : "text-muted-foreground"}`}>
+              <Film className="h-6 w-6" />
+              <span className="text-[10px] font-medium">Reels</span>
             </div>
-            <span className="text-[10px] font-medium">Alertas</span>
-          </button>
+          </Link>
 
-          {/* Menú / Avatar */}
+          {/* Chat (Replaces Menú) */}
           <button
             className="flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all text-muted-foreground"
-            onClick={() => setIsMobileMenuOpen(v => !v)}
+            onClick={() => window.dispatchEvent(new CustomEvent('open-floating-chat'))}
           >
-            <div className="h-6 w-6 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-xs font-bold">
-              {user?.name?.charAt(0).toUpperCase() ?? "?"}
-            </div>
-            <span className="text-[10px] font-medium">Menú</span>
+            <MessageCircle className="h-6 w-6" />
+            <span className="text-[10px] font-medium">Chat</span>
           </button>
 
         </nav>
@@ -704,20 +713,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      {/* FloatingChat — CSS nudges it above the mobile bottom nav */}
+      {/* FloatingChat — button hidden on mobile, triggered via bottom nav */}
       {isLoggedIn && !hideSidebarAndChat && (
-        <>
-          <style>{`
-            @media (max-width: 767px) {
-              /* Push FloatingChat button above the bottom nav bar (~56px tall) */
-              [data-floating-chat],
-              .floating-chat-root {
-                bottom: 5.5rem !important;
-              }
-            }
-          `}</style>
-          <FloatingChat />
-        </>
+        <FloatingChat />
       )}
     </div>
   );

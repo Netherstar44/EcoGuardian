@@ -56,6 +56,13 @@ export default function FloatingChat() {
     }
   }, []);
 
+  // Listen for bottom-nav "Chat" button custom event
+  useEffect(() => {
+    const handler = () => setIsOpen(prev => !prev);
+    window.addEventListener('open-floating-chat', handler);
+    return () => window.removeEventListener('open-floating-chat', handler);
+  }, []);
+
   // Cargar historial cuando se abre el chat
   useEffect(() => {
     if (isOpen && sessionId && messages.length === 0) {
@@ -206,7 +213,7 @@ export default function FloatingChat() {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-6 right-6 z-40"
+            className="fixed bottom-6 right-6 z-40 hidden md:block"
           >
             <motion.button
               whileHover={{ scale: 1.1 }}

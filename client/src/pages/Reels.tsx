@@ -199,15 +199,19 @@ export default function Reels() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-4xl mx-auto h-screen flex flex-col">
-        <div className="flex justify-between items-center p-4 bg-gradient-to-b from-black/80 to-transparent">
-          <h1 className="text-2xl font-bold">🎬 EcoReels</h1>
-          {user && (
+        {currentReel ? (
+          <div
+            className="flex-1 flex flex-col relative overflow-hidden"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            {/* Floating upload button */}
+            {user && (
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-blue-500 to-purple-600">
-                  <Plus className="h-5 w-5 mr-2" />
-                  Subir Video
-                </Button>
+                <button className="absolute top-4 right-4 z-20 w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-lg active:scale-95 transition-transform">
+                  <Plus className="h-6 w-6 text-white" />
+                </button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl">
                 <DialogHeader>
@@ -309,14 +313,7 @@ export default function Reels() {
               </DialogContent>
             </Dialog>
           )}
-        </div>
 
-        {currentReel ? (
-          <div
-            className="flex-1 flex flex-col relative overflow-hidden"
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-          >
             {/* Video Section — full screen on mobile */}
             <div className="flex-1 bg-black relative">
               <video

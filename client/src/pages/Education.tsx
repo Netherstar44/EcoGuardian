@@ -44,7 +44,7 @@ export default function Education() {
       <div className="relative rounded-3xl overflow-hidden shadow-2xl mb-12 group">
         {/* landing page hero scenic mountain landscape */}
         <img 
-          src="https://pixabay.com/get/gd84da7edb74fe0bec0588643b454d9981e4d17c2e55a0b3a2862048e00765bb620c1371c70f695259f88f673e2f408d17e6e17a905414dcb891241a3397dbf5a_1280.jpg" 
+          src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1200&auto=format&fit=crop" 
           alt="Bosque colombiano" 
           className="w-full h-[400px] object-cover group-hover:scale-105 transition-transform duration-700" 
         />
