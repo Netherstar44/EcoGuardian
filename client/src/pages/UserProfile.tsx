@@ -1699,7 +1699,7 @@ async function uploadImageFile(file: File): Promise<string> {
       try {
         const dataUrl = reader.result as string;
         const base64 = dataUrl.split(",")[1] || dataUrl;
-        const res = await fetch(`${apiBase}/api/upload", {
+        const res = await fetch(apiBase + "/api/upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",

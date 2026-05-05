@@ -110,7 +110,7 @@ export default function FloatingChat() {
   const saveChatHistory = async (updatedMessages: Message[]) => {
     try {
       const displayName = user?.name || tempName;
-      await fetch(`${apiBase}/api/chat/save', {
+      await fetch(apiBase + '/api/chat/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +148,7 @@ export default function FloatingChat() {
       
       console.log('[Chat] Payload being sent:', JSON.stringify(payload, null, 2));
       
-      const response = await fetch(`${apiBase}/api/chat', {
+      const response = await fetch(apiBase + '/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
