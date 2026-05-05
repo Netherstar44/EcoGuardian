@@ -95,9 +95,7 @@ export default function Auth() {
     <div className="min-h-[80vh] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex bg-primary/10 p-3 rounded-2xl mb-4">
-            <Leaf className="h-8 w-8 text-primary" />
-          </div>
+
           <h1 className="text-3xl font-display font-bold text-foreground">
             {isLogin ? "Inicia Sesión" : "Únete a la Causa"}
           </h1>

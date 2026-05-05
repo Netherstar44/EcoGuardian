@@ -705,7 +705,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* FloatingChat — CSS nudges it above the mobile bottom nav */}
-      {!hideSidebarAndChat && (
+      {isLoggedIn && !hideSidebarAndChat && (
         <>
           <style>{`
             @media (max-width: 767px) {
