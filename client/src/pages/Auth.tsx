@@ -94,17 +94,16 @@ export default function Auth() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-
-          <h1 className="text-3xl font-display font-bold text-foreground">
-            {isLogin ? "Inicia Sesión" : "Únete a la Causa"}
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            {isLogin ? "Ingresa para continuar reportando" : "Crea tu cuenta y empieza a ganar eco-puntos"}
-          </p>
-        </div>
-
         <div className="bg-card p-6 md:p-8 rounded-3xl shadow-xl shadow-black/5 border border-border">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-display font-bold text-foreground">
+              {isLogin ? "Inicia Sesión" : "Únete a la Causa"}
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              {isLogin ? "Ingresa para continuar reportando" : "Crea tu cuenta y empieza a ganar eco-puntos"}
+            </p>
+          </div>
+
           <div className="flex bg-muted p-1 rounded-xl mb-6">
             <button
               onClick={() => setIsLogin(true)}
