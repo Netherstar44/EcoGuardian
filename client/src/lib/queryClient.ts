@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { Capacitor } from '@capacitor/core';
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -8,7 +9,9 @@ async function throwIfResNotOk(res: Response) {
 }
 
 const getBaseUrl = () => {
-  if (typeof window !== 'undefined' && (window as any).Capacitor?.isNative) {
+  const isApp = (typeof window !== 'undefined' && Capacitor.isNativePlatform()) || 
+                (typeof navigator !== 'undefined' && navigator.userAgent.includes('wv'));
+  if (isApp) {
     return "https://eco-guardian-sand.vercel.app";
   }
   return "";

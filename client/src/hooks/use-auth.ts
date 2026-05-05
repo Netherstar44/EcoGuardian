@@ -16,8 +16,10 @@ export function useAuth() {
         const res = await apiRequest("GET", api.auth.me.path);
         return await res.json();
       } catch (e: any) {
-        if (e.message.includes("401")) return null;
-        throw e;
+        // En lugar de lanzar el error (lo cual rompe React si no hay ErrorBoundary), retornamos null
+        // Así el usuario es redirigido a Login y la app no se queda en blanco
+        console.error("Auth query failed:", e);
+        return null;
       }
     },
     staleTime: Infinity,

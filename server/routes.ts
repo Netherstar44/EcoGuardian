@@ -47,8 +47,8 @@ export async function registerRoutes(
       cookie: {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        secure: true, // required for sameSite: "none"
+        sameSite: "none", // required for Capacitor cross-origin
       },
     })
   );
