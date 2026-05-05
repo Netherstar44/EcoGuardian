@@ -35,9 +35,23 @@ if (process.env.NODE_ENV === "production") {
 }
 
 // restrict CORS for production
+const allowedOrigins = [
+  "http://localhost:3000",
+  "capacitor://localhost",
+  "http://localhost",
+  "https://eco-guardian-sand.vercel.app"
+];
+if (process.env.CORS_ORIGIN) allowedOrigins.push(process.env.CORS_ORIGIN);
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
     credentials: true,
   })
 );

@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Leaf } from "lucide-react";
+import { Capacitor } from '@capacitor/core';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
 const GoogleIcon = () => (
@@ -36,11 +37,15 @@ export default function Auth() {
   const { toast } = useToast();
 
   const handleGoogleAuth = async () => {
-    if ((window as any).Capacitor?.isNative) {
+    // Detectamos si es nativo usando Capacitor core o buscando WebView en el User-Agent
+    const isApp = Capacitor.isNativePlatform() || navigator.userAgent.includes('wv');
+    
+    if (isApp) {
       try {
         const result = await GoogleAuth.signIn();
         if (result && result.email) {
-          const res = await fetch("/api/auth/google/native", {
+          const baseUrl = isApp ? "https://eco-guardian-sand.vercel.app" : "";
+          const res = await fetch(`${baseUrl}/api/auth/google/native`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: result.email, name: result.name })
