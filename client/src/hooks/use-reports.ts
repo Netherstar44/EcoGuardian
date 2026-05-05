@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
+import { apiBase } from "@/lib/queryClient";
 import type { z } from "zod";
 
 type CreateReportInput = z.infer<typeof api.reports.create.input>;
@@ -9,7 +10,7 @@ export function useReports() {
   return useQuery({
     queryKey: [api.reports.list.path],
     queryFn: async () => {
-      const res = await fetch(api.reports.list.path, { credentials: "include" });
+      const res = await fetch(`${apiBase}${api.reports.list.path}`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch reports");
       return res.json();
     },
@@ -21,7 +22,7 @@ export function useReport(id: number) {
     queryKey: [api.reports.get.path, id],
     queryFn: async () => {
       const url = buildUrl(api.reports.get.path, { id });
-      const res = await fetch(url, { credentials: "include" });
+      const res = await fetch(`${apiBase}${url}`, { credentials: "include" });
       if (res.status === 404) throw new Error("Report not found");
       if (!res.ok) throw new Error("Failed to fetch report");
       return res.json();
@@ -34,7 +35,7 @@ export function useCreateReport() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: CreateReportInput) => {
-      const res = await fetch(api.reports.create.path, {
+      const res = await fetch(`${apiBase}${api.reports.create.path}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -56,7 +57,7 @@ export function useCreateComment() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: CreateCommentInput) => {
-      const res = await fetch(api.comments.create.path, {
+      const res = await fetch(`${apiBase}${api.comments.create.path}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

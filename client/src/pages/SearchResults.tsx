@@ -1,3 +1,4 @@
+import { apiBase } from "@/lib/queryClient";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -1004,7 +1005,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
     setGifLoading(true);
     setGifSearched(true);
     try {
-      const res = await fetch(`/api/gifs/search?q=${encodeURIComponent(q.trim())}`, { credentials: "include" });
+      const res = await fetch(`${apiBase}/api/gifs/search?q=${encodeURIComponent(q.trim())}`, { credentials: "include" });
       const data = await res.json();
       setGifs(data.gifs || []);
     } catch { setGifs([]); }

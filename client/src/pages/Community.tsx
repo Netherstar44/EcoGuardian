@@ -1,3 +1,4 @@
+import { apiBase } from "@/lib/queryClient";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -468,7 +469,7 @@ async function uploadImageFile(file: File): Promise<string> {
       try {
         const dataUrl = reader.result as string;
         const base64 = dataUrl.split(",")[1] || dataUrl;
-        const res = await fetch("/api/upload", {
+        const res = await fetch(`${apiBase}/api/upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -1858,7 +1859,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
     setGifLoading(true);
     setGifSearched(true);
     try {
-      const res = await fetch(`/api/gifs/search?q=${encodeURIComponent(q.trim())}`, { credentials: "include" });
+      const res = await fetch(`${apiBase}/api/gifs/search?q=${encodeURIComponent(q.trim())}`, { credentials: "include" });
       const data = await res.json();
       setGifs(data.gifs || []);
     } catch {

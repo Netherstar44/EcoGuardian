@@ -8,7 +8,7 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-const getBaseUrl = () => {
+export const getBaseUrl = () => {
   const isApp = (typeof window !== 'undefined' && Capacitor.isNativePlatform()) || 
                 (typeof navigator !== 'undefined' && navigator.userAgent.includes('wv'));
   if (isApp) {
@@ -16,6 +16,8 @@ const getBaseUrl = () => {
   }
   return "";
 };
+
+export const apiBase = getBaseUrl();
 
 export async function apiRequest(
   method: string,

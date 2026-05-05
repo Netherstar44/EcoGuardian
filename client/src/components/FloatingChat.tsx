@@ -1,3 +1,4 @@
+import { apiBase } from "@/lib/queryClient";
 import { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -65,7 +66,7 @@ export default function FloatingChat() {
   const loadChatHistory = async () => {
     try {
       setIsLoadingHistory(true);
-      const response = await fetch(`/api/chat/history/${sessionId}`);
+      const response = await fetch(`${apiBase}/api/chat/history/${sessionId}`);
       if (response.ok) {
         const data = await response.json();
         if (data.messages && data.messages.length > 0) {
@@ -109,7 +110,7 @@ export default function FloatingChat() {
   const saveChatHistory = async (updatedMessages: Message[]) => {
     try {
       const displayName = user?.name || tempName;
-      await fetch('/api/chat/save', {
+      await fetch(`${apiBase}/api/chat/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -147,7 +148,7 @@ export default function FloatingChat() {
       
       console.log('[Chat] Payload being sent:', JSON.stringify(payload, null, 2));
       
-      const response = await fetch('/api/chat', {
+      const response = await fetch(`${apiBase}/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
