@@ -16,9 +16,7 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <span className="inline-block py-1.5 px-4 rounded-full bg-primary/10 text-primary font-semibold text-sm mb-6 border border-primary/20">
-            Juntos por una Colombia más limpia 🇨🇴
-          </span>
+
           <h1 className="text-5xl md:text-7xl font-bold font-display text-foreground leading-tight mb-6">
             Conviértete en un <br/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">

@@ -205,7 +205,7 @@ export default function FloatingChat() {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-6 right-6 z-50"
+            className="fixed bottom-6 right-6 z-40"
           >
             <motion.button
               whileHover={{ scale: 1.1 }}
@@ -232,7 +232,7 @@ export default function FloatingChat() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed bottom-6 right-6 z-50 w-96 h-[600px]"
+            className="fixed bottom-6 right-6 z-40 w-96 h-[600px] max-h-[80vh] sm:h-[600px] w-[calc(100vw-3rem)] sm:w-96"
           >
             <motion.div
               className="w-full h-full rounded-3xl bg-card/95 dark:bg-card/98 backdrop-blur-xl border border-border shadow-2xl flex flex-col overflow-hidden"

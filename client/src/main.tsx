@@ -12,7 +12,9 @@ GoogleAuth.initialize({
   grantOfflineAccess: true,
 });
 
-if ((window as any).Capacitor?.isNative) {
+import { Capacitor } from '@capacitor/core';
+
+if (Capacitor.isNativePlatform() || navigator.userAgent.includes('wv')) {
   StatusBar.hide().catch(console.error);
 }
 

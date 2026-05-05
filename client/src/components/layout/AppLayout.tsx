@@ -712,7 +712,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               /* Push FloatingChat button above the bottom nav bar (~56px tall) */
               [data-floating-chat],
               .floating-chat-root {
-                bottom: 4.5rem !important;
+                bottom: 5.5rem !important;
               }
             }
           `}</style>
