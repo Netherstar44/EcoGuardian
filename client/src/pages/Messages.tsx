@@ -171,6 +171,8 @@ export default function Messages() {
   }, [selectedFriend]);
 
   // ── Data Fetching ──────────────────────────────────────────────────────────
+  const activeChatId = selectedFriend ? String(selectedFriend.id) : "none";
+
   const { data: friendRecords = [], isLoading: loadingFriends } = useQuery<any[]>({
     queryKey: ["/api/friends"],
     queryFn: () => apiRequest("GET", "/api/friends").then(r => r.json()),
@@ -182,7 +184,7 @@ export default function Messages() {
   });
 
   const { data: messages = [], isLoading: loadingMsgs } = useQuery<any[]>({
-    queryKey: ["/api/messages", selectedFriend ? Number(selectedFriend.id) : null],
+    queryKey: ["/api/messages", activeChatId],
     queryFn: () => apiRequest("GET", `/api/messages?friendId=${selectedFriend?.id}`).then(r => r.json()),
     enabled: !!selectedFriend,
   });
@@ -212,12 +214,18 @@ export default function Messages() {
           
           if (data.type === "new_message") {
             const msg = data.message;
-            // Si estamos en el chat correcto (usar Number() para evitar líos de tipos)
-            if (currentFriend && (Number(msg.senderId) === Number(currentFriend.id) || Number(msg.receiverId) === Number(currentFriend.id))) {
-              qc.invalidateQueries({ queryKey: ["/api/messages", Number(currentFriend.id)] });
+            const currentChatId = currentFriend ? String(currentFriend.id) : "none";
+            
+            // Si estamos en el chat correcto (usar String() para coincidir siempre con la caché)
+            if (currentFriend && (String(msg.senderId) === currentChatId || String(msg.receiverId) === currentChatId)) {
+              qc.setQueryData(["/api/messages", currentChatId], (old: any[]) => {
+                const list = old || [];
+                if (list.find(m => m.id === msg.id)) return list;
+                return [...list, msg];
+              });
               
               // Marcar como leído si estoy en el chat y el mensaje es de mi amigo
-              if (Number(msg.senderId) === Number(currentFriend.id)) {
+              if (String(msg.senderId) === currentChatId) {
                 socket?.send(JSON.stringify({ type: "read", senderId: currentFriend.id }));
               }
             }
@@ -226,7 +234,7 @@ export default function Messages() {
             qc.invalidateQueries({ queryKey: ["/api/conversations"] });
 
             // Notificación si no estoy en el chat
-            if (Number(msg.senderId) !== Number(user.id) && (!currentFriend || Number(msg.senderId) !== Number(currentFriend.id))) {
+            if (String(msg.senderId) !== String(user.id) && (!currentFriend || String(msg.senderId) !== currentChatId)) {
               try {
                 LocalNotifications.schedule({
                   notifications: [{
@@ -245,8 +253,9 @@ export default function Messages() {
           }
 
           if (data.type === "messages_read") {
-            if (currentFriend && Number(data.readBy) === Number(currentFriend.id)) {
-              qc.invalidateQueries({ queryKey: ["/api/messages", Number(currentFriend.id)] });
+            const currentChatId = currentFriend ? String(currentFriend.id) : "none";
+            if (currentFriend && String(data.readBy) === currentChatId) {
+              qc.invalidateQueries({ queryKey: ["/api/messages", currentChatId] });
             }
           }
         } catch (err) {
@@ -296,10 +305,14 @@ export default function Messages() {
       if (!res.ok) throw new Error("Error al enviar");
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (newMsg) => {
       setDraft("");
       setShowGifPicker(false);
-      qc.invalidateQueries({ queryKey: ["/api/messages", Number(selectedFriend?.id)] });
+      qc.setQueryData(["/api/messages", activeChatId], (old: any[]) => {
+        const list = old || [];
+        if (list.find(m => m.id === newMsg.id)) return list;
+        return [...list, newMsg];
+      });
       qc.invalidateQueries({ queryKey: ["/api/conversations"] });
     },
     onError: () => toast({ variant: "destructive", title: "Error al enviar mensaje" }),
