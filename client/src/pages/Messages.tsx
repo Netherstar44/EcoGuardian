@@ -10,6 +10,7 @@ import {
   MessageCircle, ArrowLeft, Send, Loader2, Image as ImageIcon, 
   Paperclip, Check, CheckCheck, Smile, X
 } from "lucide-react";
+import { apiBase, apiRequest } from "@/lib/queryClient";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -40,7 +41,7 @@ function GifPicker({ onSelect, onClose, position }: { onSelect: (url: string) =>
     setActiveCategory(cat);
     setSearched(false);
     try {
-      const res = await fetch(`/api/gifs/category?cat=${cat}`);
+      const res = await fetch(apiBase + `/api/gifs/category?cat=${cat}`);
       const data = await res.json();
       setGifs(data.gifs || []);
     } catch (err) {}
@@ -52,7 +53,7 @@ function GifPicker({ onSelect, onClose, position }: { onSelect: (url: string) =>
     setActiveCategory("trending");
     setSearched(false);
     try {
-      const res = await fetch("/api/gifs/trending");
+      const res = await fetch(apiBase + "/api/gifs/trending");
       const data = await res.json();
       setGifs(data.gifs || []);
     } catch (err) {}
@@ -65,7 +66,7 @@ function GifPicker({ onSelect, onClose, position }: { onSelect: (url: string) =>
     setSearched(true);
     setActiveCategory("");
     try {
-      const res = await fetch(`/api/gifs/search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(apiBase + `/api/gifs/search?q=${encodeURIComponent(q)}`);
       const data = await res.json();
       setGifs(data.gifs || []);
     } catch (err) {}

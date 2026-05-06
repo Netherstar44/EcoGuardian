@@ -1555,7 +1555,7 @@ function PostShare({ postId }: { postId: number }) {
   const { toast } = useToast();
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/community?postId=${postId}`;
+    const url = `${apiBase || window.location.origin}/community?postId=${postId}`;
     const result = await shareContent({
       title: "EcoGuardian",
       text: "Mira esta publicacion de la comunidad en EcoGuardian!",

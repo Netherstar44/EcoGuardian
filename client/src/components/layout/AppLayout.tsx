@@ -21,6 +21,7 @@ import { LeftSidebar } from "@/components/layout/LeftSidebar";
 import { SearchDropdown } from "@/components/layout/SearchDropdown";
 import { useTheme } from "@/components/theme-provider";
 import { LocalNotifications } from "@capacitor/local-notifications";
+import { Capacitor } from "@capacitor/core";
 
 const navItems = [
   { href: "/community", label: "Comunidad", icon: Home },
@@ -62,10 +63,10 @@ const bottomSections = [
     ],
   },
   {
-    label: "Configuración y privacidad",
+    label: "Configuracion y privacidad",
     icon: Settings,
     items: [
-      { label: "Configuración", href: "#settings" },
+      { label: "Configuracion", href: "#settings" },
     ],
   },
   {
@@ -126,7 +127,7 @@ function MobileSearchModal({ open, onClose }: { open: boolean; onClose: () => vo
                   value={q}
                   onChange={e => setQ(e.target.value)}
                   onKeyDown={e => { if (e.key === "Enter") submit(); if (e.key === "Escape") onClose(); }}
-                  placeholder="Buscar en EcoGuardián..."
+                  placeholder="Buscar en EcoGuardian..."
                   className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                 />
                 {q && (
@@ -184,7 +185,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     const ua = navigator.userAgent;
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
     // Only show if NOT running inside Capacitor (native app)
-    const isNative = (window as any).Capacitor?.isNative;
+    const isNative = Capacitor.isNativePlatform();
     setIsMobileBrowser(isMobile && !isNative);
   }, []);
 
@@ -302,7 +303,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             <Smartphone className="h-5 w-5" />
             <div className="text-[10px] sm:text-xs">
-              <p className="font-bold">EcoGuardián App</p>
+              <p className="font-bold">EcoGuardian App</p>
               <p className="opacity-80">Mejor experiencia en nuestra app</p>
             </div>
           </div>
@@ -325,7 +326,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <img src="/favicon.png" alt="EcoGuardian" className="h-8 w-8 object-contain" />
               </div>
               <span className="text-lg font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                EcoGuardián
+                EcoGuardian
               </span>
             </Link>
 
@@ -466,14 +467,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => logout()} className="text-destructive focus:text-destructive cursor-pointer">
-                        <LogOut className="h-4 w-4 mr-2" /> Cerrar Sesión
+                        <LogOut className="h-4 w-4 mr-2" /> Cerrar Sesion
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
                   <Link href="/auth">
                     <Button className="hidden md:flex rounded-full shadow-md shadow-primary/20 font-semibold">
-                      Iniciar Sesión
+                      Iniciar Sesion
                     </Button>
                   </Link>
                 )
@@ -607,7 +608,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     )}
                   </Link>
                 ) : (
-                  <p className="font-bold text-lg text-foreground">EcoGuardián</p>
+                  <p className="font-bold text-lg text-foreground">EcoGuardian</p>
                 )}
                 <div className="flex items-center gap-1 ml-2">
                   <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="p-2 rounded-full hover:bg-muted transition-colors shrink-0">
@@ -775,7 +776,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <div className="px-4 pb-8 pt-2">
                     <Link href="/auth" onClick={closeMenu}>
                       <Button className="w-full h-12 text-base font-semibold rounded-xl">
-                        Iniciar Sesión / Registrarse
+                        Iniciar Sesion / Registrarse
                       </Button>
                     </Link>
                   </div>
