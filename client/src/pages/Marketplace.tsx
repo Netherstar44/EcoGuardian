@@ -60,7 +60,7 @@ export default function Marketplace() {
       return apiRequest("POST", "/api/marketplace/products", newProduct);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/marketplace/products"] });
+      queryClient.invalidateQueries({ queryKey: ["marketplace/products"] });
       toast({ title: "✅ Producto creado", description: "Tu producto fue publicado exitosamente" });
       setNewProduct({
         title: "",
@@ -275,45 +275,94 @@ export default function Marketplace() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
             >
-              <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
-                {product.imageUrl && (
-                  <div className="w-full h-48 bg-gradient-to-br from-green-100 to-blue-100 overflow-hidden">
-                    <img
-                      src={product.imageUrl}
-                      alt={product.title}
-                      className="w-full h-full object-cover hover:scale-110 transition-transform"
-                    />
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col cursor-pointer group">
+                    {product.imageUrl && (
+                      <div className="w-full h-48 bg-gradient-to-br from-green-100 to-blue-100 overflow-hidden relative">
+                        <img
+                          src={product.imageUrl}
+                          alt={product.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <span className="text-white font-semibold">Ver detalles</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <CardContent className="flex-1 p-4 space-y-3">
+                      <div>
+                        <p className="text-xs font-semibold text-green-600 mb-1">
+                          {CATEGORIES.find(c => c.id === product.category)?.label || product.category}
+                        </p>
+                        <h3 className="font-bold text-foreground line-clamp-2">{product.title}</h3>
+                      </div>
+
+                      <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>
+
+                      <div className="flex items-baseline justify-between pt-2">
+                        <span className="text-2xl font-bold text-green-600">${product.price.toFixed(2)}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {product.quantity} disponibles
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </DialogTrigger>
+                
+                {/* Preview Modal Content */}
+                <DialogContent className="max-w-3xl border-none shadow-2xl p-0 overflow-hidden">
+                  <div className="flex flex-col md:flex-row">
+                    {/* Left: Image */}
+                    <div className="w-full md:w-1/2 bg-muted flex items-center justify-center p-4">
+                      {product.imageUrl ? (
+                        <img
+                          src={product.imageUrl}
+                          alt={product.title}
+                          className="w-full h-auto max-h-[500px] object-contain rounded-lg"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-64">
+                          <span className="text-muted-foreground">Sin imagen</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Right: Info */}
+                    <div className="w-full md:w-1/2 p-6 flex flex-col">
+                      <p className="text-sm font-semibold text-green-600 uppercase tracking-wider mb-2">
+                        {CATEGORIES.find(c => c.id === product.category)?.label || product.category}
+                      </p>
+                      <h2 className="text-3xl font-bold text-foreground mb-4">{product.title}</h2>
+                      
+                      <div className="flex items-center gap-4 mb-6">
+                        <span className="text-4xl font-bold text-green-600">${product.price.toFixed(2)}</span>
+                        <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                          {product.quantity} en stock
+                        </span>
+                      </div>
+                      
+                      <div className="flex-1 overflow-y-auto pr-2 mb-6">
+                        <h4 className="font-semibold mb-2">Descripción del Producto</h4>
+                        <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                          {product.description}
+                        </p>
+                      </div>
+                      
+                      <div className="flex gap-3 pt-4 border-t">
+                        <Button className="flex-1 h-12 text-base">
+                          <ShoppingCart className="h-5 w-5 mr-2" />
+                          Comprar Ahora
+                        </Button>
+                        <Button variant="outline" className="h-12 w-12 p-0 flex-shrink-0">
+                          <Heart className="h-5 w-5" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                )}
-
-                <CardContent className="flex-1 p-4 space-y-3">
-                  <div>
-                    <p className="text-xs font-semibold text-green-600 mb-1">
-                      {CATEGORIES.find(c => c.id === product.category)?.label || product.category}
-                    </p>
-                    <h3 className="font-bold text-foreground line-clamp-2">{product.title}</h3>
-                  </div>
-
-                  <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>
-
-                  <div className="flex items-baseline justify-between pt-2">
-                    <span className="text-2xl font-bold text-green-600">${product.price.toFixed(2)}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {product.quantity} disponibles
-                    </span>
-                  </div>
-                </CardContent>
-
-                <div className="p-4 border-t flex gap-2">
-                  <Button size="sm" className="flex-1">
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Comprar
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Heart className="h-4 w-4" />
-                  </Button>
-                </div>
-              </Card>
+                </DialogContent>
+              </Dialog>
             </motion.div>
           ))}
           </div>

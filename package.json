@@ -11,6 +11,7 @@
     "db:push": "drizzle-kit push",
     "migrate": "tsx server/migrate.ts",
     "seed:trivia": "tsx script/seed-trivia.ts",
+    "seed:marketplace": "tsx script/seed_marketplace.ts",
     "test:gaia": "tsx script/test-gaia.ts"
   },
   "dependencies": {
