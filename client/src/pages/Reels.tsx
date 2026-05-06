@@ -11,8 +11,9 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import {
   Heart, MessageCircle, Share2, Upload, Pause, Play, Volume2,
-  VolumeX, ChevronUp, ChevronDown, Smile, Loader2, Plus,
+  VolumeX, ChevronUp, ChevronDown, Smile, Loader2, Plus, ArrowLeft
 } from "lucide-react";
+import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import EmojiPicker from "emoji-picker-react";
 import { shareContent } from "@/lib/share";
@@ -20,6 +21,7 @@ import { shareContent } from "@/lib/share";
 const CATEGORIES = ["limpieza", "reciclaje", "compostaje", "energía", "agua", "biodiversidad", "otro"];
 
 export default function Reels() {
+  const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
   const [currentReelIndex, setCurrentReelIndex] = useState(0);
@@ -220,6 +222,14 @@ export default function Reels() {
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
+            {/* Back button (Mobile only) */}
+            <button 
+              onClick={() => setLocation('/')}
+              className="absolute top-4 left-4 z-20 w-12 h-12 rounded-full bg-black/50 backdrop-blur flex items-center justify-center text-white shadow-lg active:scale-95 transition-transform md:hidden"
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </button>
+
             {/* Floating upload button */}
             {user && (
             <Dialog>
