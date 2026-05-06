@@ -18,6 +18,10 @@ import { promisify } from "util";
 
 const scryptAsync = promisify(scrypt);
 
+import { productsSeed } from "./products_seed.js";
+import { db } from "./db.js";
+import { users } from "../shared/schema.js";
+
 async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
   const buf = (await scryptAsync(password, salt, 64)) as Buffer;
@@ -883,16 +887,12 @@ export async function registerRoutes(
 
   app.get('/api/marketplace/seed', async (req, res) => {
     try {
-      // Dynamically import to avoid loading it on every request if not needed
-      const { productsSeed } = await import("./products_seed.ts" as any);
       const existing = await storage.getMarketplaceProducts();
       if (existing.length > 0) {
         return res.json({ message: "Marketplace is already seeded", count: existing.length });
       }
 
       // get first user
-      const { db } = await import("./db.ts" as any);
-      const { users } = await import("../shared/schema.ts" as any);
       const allUsers = await db.select().from(users).limit(1);
       const sellerId = allUsers.length > 0 ? allUsers[0].id : 1;
       
