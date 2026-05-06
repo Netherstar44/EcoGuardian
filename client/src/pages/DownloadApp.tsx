@@ -4,9 +4,7 @@ import { Link } from "wouter";
 
 export default function DownloadApp() {
   const handleDownload = () => {
-    // This would ideally point to the actual APK file
-    // For now, it's a placeholder as requested
-    window.location.href = "/EcoGuardian.apk";
+    window.location.href = "https://download1321.mediafire.com/vsiwy63scihgf_WhLAAV8QODlXBPBCHSYDVvA9nkifrObhz9bQ7kJ72Ga1GGwKk7BtWu0pRc7NzbIcB6Y26MPljnd6doVeOG0E_kYE47IFZkKY2lb3Hg8TvY0Bns46O8D6ycScVxHnB7BLgKW7JRjNa6z6lGkPcxyQQjfyNjJ8aN/mr74aql2qkdx0m0/EcoGuardian.apk";
   };
 
   return (
