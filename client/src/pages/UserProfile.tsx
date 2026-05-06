@@ -531,7 +531,7 @@ export default function UserProfile() {
                   {profile?.bio && <p className="text-muted-foreground mt-2">{profile.bio}</p>}
                   {profile?.dateOfBirth && (
                     <p className="text-sm text-muted-foreground mt-1">
-                      ðŸ“… Nacimiento: {new Date(profile.dateOfBirth).toLocaleDateString()}
+                      📅 Nacimiento: {new Date(profile.dateOfBirth).toLocaleDateString()}
                     </p>
                   )}
                 </div>

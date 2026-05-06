@@ -266,7 +266,7 @@ export default function SearchResults() {
                               {user.city || user.country || "Sin ubicación"}
                             </p>
                             <p className="text-xs text-yellow-600 font-bold mb-4">
-                              {user.points} ðŸŒ± eco-puntos
+                              {user.points} 🌱 eco-puntos
                             </p>
                             <Button className="w-full">
                               <UserPlus className="h-4 w-4 mr-2" />

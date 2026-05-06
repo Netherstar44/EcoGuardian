@@ -1982,14 +1982,14 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
                 {!gifSearched && (
                   <div className="flex gap-1 px-2 py-1.5 overflow-x-auto border-b border-border/30 flex-shrink-0" style={{ scrollbarWidth: "none" }}>
                     {[
-                      { id: "trending", label: "ðŸ”¥ Trending" },
-                      { id: "feliz", label: "ðŸ˜„ Feliz" },
-                      { id: "triste", label: "ðŸ˜¢ Triste" },
+                      { id: "trending", label: "🔥 Trending" },
+                      { id: "feliz", label: "😄 Feliz" },
+                      { id: "triste", label: "😢 Triste" },
                       { id: "gracias", label: "ðŸ™ Gracias" },
                       { id: "aplausos", label: "ðŸ‘ Aplausos" },
                       { id: "amor", label: "â¤ï¸ Amor" },
-                      { id: "sorpresa", label: "ðŸ˜± Sorpresa" },
-                      { id: "baile", label: "ðŸ’ƒ Baile" },
+                      { id: "sorpresa", label: "😱 Sorpresa" },
+                      { id: "baile", label: "💃 Baile" },
                     ].map((cat) => (
                       <button
                         key={cat.id}
