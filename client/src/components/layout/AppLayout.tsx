@@ -19,6 +19,7 @@ import FloatingChat from "@/components/FloatingChat";
 import { LeftSidebar } from "@/components/layout/LeftSidebar";
 import { SearchDropdown } from "@/components/layout/SearchDropdown";
 import { useTheme } from "@/components/theme-provider";
+import { LocalNotifications } from "@capacitor/local-notifications";
 
 const navItems = [
   { href: "/community", label: "Comunidad", icon: Home },
@@ -206,6 +207,63 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     refetchInterval: 30000,
   });
   const pendingCount = Array.isArray(friendRequests) ? friendRequests.length : 0;
+
+  const { data: recentPosts = [] } = useQuery({
+    queryKey: ["/api/posts", "recent"],
+    queryFn: () => apiRequest("GET", "/api/posts").then(r => r.json()),
+    enabled: isLoggedIn,
+    refetchInterval: 60000,
+  });
+
+  // Global Notifications Watcher
+  const [prevReqs, setPrevReqs] = useState<number>(0);
+  const [prevPosts, setPrevPosts] = useState<number>(0);
+
+  useEffect(() => {
+    // Request permissions once on load
+    try {
+      LocalNotifications.requestPermissions();
+    } catch(e) {}
+  }, []);
+
+  useEffect(() => {
+    // Watch for new friend requests
+    if (friendRequests && friendRequests.length > prevReqs && prevReqs > 0) {
+      const newReq = friendRequests[friendRequests.length - 1];
+      const name = newReq?.requester?.name || "Alguien";
+      try {
+        LocalNotifications.schedule({
+          notifications: [{
+            title: "Nueva solicitud",
+            body: `${name} te envió una solicitud de amistad`,
+            id: new Date().getTime(),
+          }]
+        });
+      } catch(e) {}
+    }
+    setPrevReqs(friendRequests?.length || 0);
+  }, [friendRequests]);
+
+  useEffect(() => {
+    // Watch for new posts
+    if (recentPosts && recentPosts.length > prevPosts && prevPosts > 0) {
+      const newPost = recentPosts[0]; // Assuming first is newest
+      const name = newPost?.author?.name || "Alguien";
+      // Avoid notifying if the user themselves posted it
+      if (newPost?.author?.id !== user?.id) {
+        try {
+          LocalNotifications.schedule({
+            notifications: [{
+              title: "Nueva publicación",
+              body: `${name} publicó un post`,
+              id: new Date().getTime(),
+            }]
+          });
+        } catch(e) {}
+      }
+    }
+    setPrevPosts(recentPosts?.length || 0);
+  }, [recentPosts]);
 
   const acceptMutation = useMutation({
     mutationFn: (id: number) => apiRequest("PATCH", `/api/friends/${id}/accept`, {}),

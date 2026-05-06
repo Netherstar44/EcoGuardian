@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { MessageCircle, ArrowLeft, Send, Loader2 } from "lucide-react";
+import { LocalNotifications } from "@capacitor/local-notifications";
 
 function SimpleAvatar({ name, size = "sm" }: { name: string; size?: "sm" | "md" }) {
   const sz = size === "md" ? "h-10 w-10 text-sm" : "h-8 w-8 text-xs";
@@ -77,10 +78,31 @@ export default function Messages() {
     },
   });
 
-  // ── Auto-scroll ───────────────────────────────────────────────────────────
+  // ── Auto-scroll & Notifications ───────────────────────────────────────────
+  const [prevMsgCount, setPrevMsgCount] = useState(0);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    
+    // Check for new messages
+    if (messages && messages.length > prevMsgCount && prevMsgCount > 0) {
+      const newMsg = messages[messages.length - 1];
+      // If I didn't send it, notify me
+      if (newMsg.senderId !== user?.id && newMsg.sender?.id !== user?.id) {
+        const senderName = selectedFriend?.name || "Alguien";
+        try {
+          LocalNotifications.schedule({
+            notifications: [{
+              title: "Nuevo mensaje",
+              body: `${senderName} te envió un mensaje`,
+              id: new Date().getTime(),
+            }]
+          });
+        } catch(e) {}
+      }
+    }
+    setPrevMsgCount(messages?.length || 0);
+  }, [messages, selectedFriend, user]);
 
   // ── URL param ?friend=id ──────────────────────────────────────────────────
   useEffect(() => {
