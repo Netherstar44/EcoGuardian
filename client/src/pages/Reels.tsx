@@ -212,8 +212,8 @@ export default function Reels() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-4xl mx-auto h-screen flex flex-col">
+    <div className="w-full h-full bg-black text-white flex flex-col absolute inset-0">
+      <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col relative h-full">
         {currentReel ? (
           <div
             className="flex-1 flex flex-col relative overflow-hidden"

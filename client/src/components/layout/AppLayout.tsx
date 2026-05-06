@@ -762,7 +762,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* ── MAIN LAYOUT ───────────────────────────────────────────────────── */}
       <div className="flex-1 flex">
         {!hideSidebarAndChat && <LeftSidebar />}
-        <main className={`flex-1 min-h-0 overflow-auto ${isLoggedIn ? "pb-20 md:pb-0" : "pb-4"}`}>
+        <main className={`flex-1 min-h-0 overflow-auto ${isLoggedIn && !location.startsWith('/reels') ? "pb-20 md:pb-0" : "pb-0"}`}>
           {children}
         </main>
       </div>
