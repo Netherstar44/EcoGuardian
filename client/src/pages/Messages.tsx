@@ -182,7 +182,7 @@ export default function Messages() {
   });
 
   const { data: messages = [], isLoading: loadingMsgs } = useQuery<any[]>({
-    queryKey: ["/api/messages", selectedFriend?.id],
+    queryKey: ["/api/messages", selectedFriend ? Number(selectedFriend.id) : null],
     queryFn: () => apiRequest("GET", `/api/messages?friendId=${selectedFriend?.id}`).then(r => r.json()),
     enabled: !!selectedFriend,
   });
@@ -214,7 +214,7 @@ export default function Messages() {
             const msg = data.message;
             // Si estamos en el chat correcto (usar Number() para evitar líos de tipos)
             if (currentFriend && (Number(msg.senderId) === Number(currentFriend.id) || Number(msg.receiverId) === Number(currentFriend.id))) {
-              qc.setQueryData(["/api/messages", currentFriend.id], (old: any[]) => {
+              qc.setQueryData(["/api/messages", Number(currentFriend.id)], (old: any[]) => {
                 const list = old || [];
                 if (list.find(m => m.id === msg.id)) return list;
                 return [...list, msg];
@@ -250,7 +250,7 @@ export default function Messages() {
 
           if (data.type === "messages_read") {
             if (currentFriend && Number(data.readBy) === Number(currentFriend.id)) {
-              qc.invalidateQueries({ queryKey: ["/api/messages", currentFriend.id] });
+              qc.invalidateQueries({ queryKey: ["/api/messages", Number(currentFriend.id)] });
             }
           }
         } catch (err) {
@@ -303,7 +303,7 @@ export default function Messages() {
     onSuccess: (newMsg) => {
       setDraft("");
       setShowGifPicker(false);
-      qc.setQueryData(["/api/messages", selectedFriend?.id], (old: any[]) => {
+      qc.setQueryData(["/api/messages", Number(selectedFriend?.id)], (old: any[]) => {
         if (!old) return [newMsg];
         if (old.find(m => m.id === newMsg.id)) return old;
         return [...old, newMsg];
