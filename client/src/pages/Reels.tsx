@@ -384,7 +384,16 @@ export default function Reels() {
                 </button>
               )}
 
-              {/* Video Info overlay completely removed as requested */}
+              {/* Video Info — bottom left overlay, transparent with text shadow */}
+              <div className="absolute bottom-16 left-0 right-16 p-4 pr-2 pointer-events-none">
+                <p className="text-xs font-semibold text-blue-400 mb-1 drop-shadow-md">{currentReel.category}</p>
+                <h2 className="text-base font-bold text-white mb-1 leading-tight drop-shadow-md">{currentReel.title}</h2>
+                <p className="text-xs text-gray-200 line-clamp-2 drop-shadow-md">{currentReel.description}</p>
+                <div className="flex items-center mt-2 text-xs text-gray-300 drop-shadow-md">
+                  <span className="font-semibold text-white mr-2">{currentReel.author?.name}</span>
+                  <span>👁️ {currentReel.viewCount || 0}</span>
+                </div>
+              </div>
 
               {/* Actions — overlay on right side (TikTok/Instagram style) */}
               {!showComments && (
