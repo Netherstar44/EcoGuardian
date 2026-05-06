@@ -1,4 +1,4 @@
-﻿import { shareContent } from "@/lib/share";
+import { shareContent } from "@/lib/share";
 import { apiBase } from "@/lib/queryClient";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -1536,7 +1536,7 @@ function PostShare({ postId }: { postId: number }) {
   const { toast } = useToast();
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/comunidad/post/${postId}`;
+    const url = `${window.location.origin}/community?postId=${postId}`;
     const result = await shareContent({
       title: "EcoGuardian",
       text: "Mira esta publicacion de la comunidad en EcoGuardian!",

@@ -190,7 +190,7 @@ export default function Reels() {
 
   const handleShareReel = async () => {
     if (!currentReel) return;
-    const url = `${window.location.origin}/reels/${currentReel.id}`;
+    const url = `${window.location.origin}/reels`;
     const result = await shareContent({
       title: currentReel.title || "EcoReel",
       text: `¡Mira este Reel ecológico de ${currentReel.author?.name || 'la comunidad'} en EcoGuardián!`,

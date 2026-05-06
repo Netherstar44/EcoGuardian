@@ -492,7 +492,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* ── Mobile search modal ───────────────────────────────────────────── */}
       <MobileSearchModal open={isMobileSearchOpen} onClose={() => setIsMobileSearchOpen(false)} />
 
-      {/* ── MOBILE BOTTOM NAV BAR ─────────────────────────────────────────── */}
+      {/* ── MOBILE BOTTOM NAV ────────────────────────────────────────────────── */}
       {isLoggedIn && !location.startsWith('/reels') && (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-xl border-t border-border/50 flex items-center justify-around px-2 py-1">
 
