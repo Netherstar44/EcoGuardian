@@ -1964,7 +1964,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
                         searchGifs(val);
                       }
                     }}
-                    placeholder="ðŸ” Buscar GIF..."
+                    placeholder="🔍 Buscar GIF..."
                     className="flex-1 text-sm px-3 py-1.5 rounded-full border border-border bg-muted focus:outline-none focus:ring-1 focus:ring-primary"
                     autoFocus
                   />
@@ -1985,9 +1985,9 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
                       { id: "trending", label: "🔥 Trending" },
                       { id: "feliz", label: "😄 Feliz" },
                       { id: "triste", label: "😢 Triste" },
-                      { id: "gracias", label: "ðŸ™ Gracias" },
-                      { id: "aplausos", label: "ðŸ‘ Aplausos" },
-                      { id: "amor", label: "â¤ï¸ Amor" },
+                      { id: "gracias", label: "🙏 Gracias" },
+                      { id: "aplausos", label: "👏 Aplausos" },
+                      { id: "amor", label: "❤️ Amor" },
                       { id: "sorpresa", label: "😱 Sorpresa" },
                       { id: "baile", label: "💃 Baile" },
                     ].map((cat) => (
