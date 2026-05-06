@@ -5,6 +5,7 @@ import fs from "fs";
 import path from "path";
 
 async function seed() {
+  console.log("Iniciando la carga de productos al Marketplace...");
   const allUsers = await db.select().from(users).limit(1);
   if (allUsers.length === 0) {
     console.log("No users found. Please register a user first.");
@@ -52,11 +53,12 @@ async function seed() {
           status: "available",
           rating: 5,
         });
+        console.log(`✅ Agregado: ${title}`);
         count++;
       }
     }
   }
-  console.log(`Successfully seeded ${count} marketplace products!`);
+  console.log(`¡Éxito! Se cargaron ${count} productos en la base de datos.`);
 }
 
 seed().catch(console.error).finally(() => process.exit(0));
