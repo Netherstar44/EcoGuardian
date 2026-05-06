@@ -384,16 +384,7 @@ export default function Reels() {
                 </button>
               )}
 
-              {/* Video Info — bottom left overlay, above bottom nav */}
-              <div className="absolute bottom-16 left-0 right-16 bg-gradient-to-t from-black/80 to-transparent p-4 pr-2">
-                <p className="text-xs font-semibold text-blue-400 mb-1">{currentReel.category}</p>
-                <h2 className="text-base font-bold text-white mb-1 leading-tight">{currentReel.title}</h2>
-                <p className="text-xs text-gray-300 line-clamp-2">{currentReel.description}</p>
-                <div className="flex items-center mt-2 text-xs text-gray-400">
-                  <span className="font-semibold text-white mr-2">{currentReel.author?.name}</span>
-                  <span>👁️ {currentReel.viewCount || 0}</span>
-                </div>
-              </div>
+              {/* Video Info overlay completely removed as requested */}
 
               {/* Actions — overlay on right side (TikTok/Instagram style) */}
               {!showComments && (

@@ -540,6 +540,25 @@ export default function Community() {
     queryKey: [api.posts.list.path],
   });
 
+  useEffect(() => {
+    if (posts && posts.length > 0) {
+      const searchParams = new URLSearchParams(window.location.search);
+      const postIdParam = searchParams.get("postId");
+      if (postIdParam) {
+        setTimeout(() => {
+          const el = document.getElementById(`post-${postIdParam}`);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+            el.classList.add("ring-2", "ring-primary", "ring-offset-2", "rounded-xl", "transition-all", "duration-1000");
+            setTimeout(() => {
+              el.classList.remove("ring-2", "ring-primary", "ring-offset-2", "rounded-xl");
+            }, 3000);
+          }
+        }, 500); // Give layout time to render
+      }
+    }
+  }, [posts]);
+
   const form = useForm<InsertPost>({
     resolver: zodResolver(insertPostSchema as any),
     defaultValues: { content: "", category: "reciclaje" },
@@ -763,7 +782,7 @@ export default function Community() {
       <div className="space-y-6">
         <AnimatePresence>
           {sortedPosts.map((post) => (
-            <motion.div key={post.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} layout>
+            <motion.div key={post.id} id={`post-${post.id}`} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} layout>
               <Card className="border-none shadow-sm hover:shadow-md transition-shadow overflow-hidden">
                 <CardHeader className="flex flex-row items-center gap-4 space-y-0">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
