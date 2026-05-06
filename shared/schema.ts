@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, doublePrecision, uniqueIndex, boolean, date } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, doublePrecision, uniqueIndex, boolean, date, json } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -161,6 +161,34 @@ export const chatConversationsRelations = relations(chatConversations, ({ one })
 }));
 
 // ────────────────────────────────────────────────────────────────────────────────
+// MENSAJERÍA DIRECTA (Chat en vivo entre usuarios)
+// ────────────────────────────────────────────────────────────────────────────────
+
+export const directMessages = pgTable("direct_messages", {
+  id: serial("id").primaryKey(),
+  senderId: integer("sender_id").notNull(),
+  receiverId: integer("receiver_id").notNull(),
+  content: text("content"),                    // texto del mensaje (puede ser null si solo hay adjunto)
+  type: text("type").default("text").notNull(), // text | image | file | gif
+  attachmentUrl: text("attachment_url"),        // URL de Cloudinary o GIPHY
+  attachmentName: text("attachment_name"),      // nombre original del archivo
+  attachmentSize: integer("attachment_size"),   // tamaño en bytes
+  read: boolean("read").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const directMessagesRelations = relations(directMessages, ({ one }) => ({
+  sender: one(users, {
+    fields: [directMessages.senderId],
+    references: [users.id],
+  }),
+  receiver: one(users, {
+    fields: [directMessages.receiverId],
+    references: [users.id],
+  }),
+}));
+
+// ────────────────────────────────────────────────────────────────────────────────
 // NUEVAS TABLAS PARA NUEVAS FUNCIONALIDADES
 // ────────────────────────────────────────────────────────────────────────────────
 
@@ -249,6 +277,9 @@ export const reelComments = pgTable("reel_comments", {
   reelId: integer("reel_id").notNull(),
   userId: integer("user_id").notNull(),
   content: text("content").notNull(),
+  parentCommentId: integer("parent_comment_id"),
+  imageUrl: text("image_url"),
+  stickerUrl: text("sticker_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   editedAt: timestamp("edited_at"),
 });
@@ -263,6 +294,25 @@ export const reelReactions = pgTable("reel_reactions", {
 }, (table) => ({
   uniqueUserReel: uniqueIndex("reel_reactions_user_reel_unique").on(table.userId, table.reelId),
 }));
+
+// Reacciones en comentarios (de Reels y Posts)
+export const commentReactions = pgTable("comment_reactions", {
+  id: serial("id").primaryKey(),
+  commentId: integer("comment_id").notNull(),
+  userId: integer("user_id").notNull(),
+  type: text("type").notNull(),
+  commentType: text("comment_type").default("reel").notNull(), // reel | post
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  uniqueUserComment: uniqueIndex("comment_reactions_user_comment_unique").on(table.userId, table.commentId, table.commentType),
+}));
+
+// Sesiones (creada por connect-pg-simple, necesaria para que drizzle no la borre)
+export const sessions = pgTable("session", {
+  sid: text("sid").primaryKey(),
+  sess: json("sess").notNull(),
+  expire: timestamp("expire", { precision: 6 }).notNull(),
+});
 
 // Minijuegos diarios
 export const minigames = pgTable("minigames", {
@@ -473,3 +523,9 @@ export type InsertChatConversation = z.infer<typeof insertChatConversationSchema
 export type ReportWithAuthor = Report & { author: Pick<User, "id" | "name" | "points"> };
 export type CommentWithAuthor = Comment & { author: Pick<User, "id" | "name"> };
 export type ReportDetails = ReportWithAuthor & { comments: CommentWithAuthor[] };
+
+// Direct Messages
+export const insertDirectMessageSchema = createInsertSchema(directMessages).omit({ id: true, createdAt: true, read: true });
+export type DirectMessage = typeof directMessages.$inferSelect;
+export type InsertDirectMessage = z.infer<typeof insertDirectMessageSchema>;
+export type DirectMessageWithSender = DirectMessage & { sender: Pick<User, "id" | "name" | "avatar"> };

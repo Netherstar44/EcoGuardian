@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient, apiBase } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -283,7 +283,7 @@ export default function Marketplace() {
                     {product.imageUrl && (
                       <div className="w-full aspect-square bg-gradient-to-br from-green-100 to-blue-100 overflow-hidden relative">
                         <img
-                          src={product.imageUrl}
+                          src={`${apiBase}${product.imageUrl}`}
                           alt={product.title}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform"
                         />
@@ -315,7 +315,7 @@ export default function Marketplace() {
                     <div className="w-full md:w-1/2 bg-muted flex items-center justify-center p-3 md:p-4">
                       {product.imageUrl ? (
                         <img
-                          src={product.imageUrl}
+                          src={`${apiBase}${product.imageUrl}`}
                           alt={product.title}
                           className="w-full h-auto max-h-[250px] md:max-h-[500px] object-contain rounded-lg"
                         />

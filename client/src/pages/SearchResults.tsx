@@ -163,7 +163,7 @@ export default function SearchResults() {
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Resultados de bÃºsqueda</h1>
+          <h1 className="text-3xl font-bold mb-2">Resultados de búsqueda</h1>
           <p className="text-muted-foreground">
             {debouncedQuery && `Buscando: "${debouncedQuery}"`}
           </p>
@@ -177,7 +177,7 @@ export default function SearchResults() {
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Buscar en EcoGuardiÃ¡n..."
+              placeholder="Buscar en EcoGuardián..."
               className="flex-1 bg-transparent outline-none"
             />
           </div>
@@ -263,7 +263,7 @@ export default function SearchResults() {
                             </div>
                             <h3 className="font-bold text-lg">{user.name}</h3>
                             <p className="text-sm text-muted-foreground mb-1">
-                              {user.city || user.country || "Sin ubicaciÃ³n"}
+                              {user.city || user.country || "Sin ubicación"}
                             </p>
                             <p className="text-xs text-yellow-600 font-bold mb-4">
                               {user.points} ðŸŒ± eco-puntos
@@ -1031,7 +1031,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
           ref={commentInputRef}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder={user ? `Comentar como ${user.name}...` : "Inicia sesiÃ³n para comentar"}
+          placeholder={user ? `Comentar como ${user.name}...` : "Inicia sesión para comentar"}
           disabled={!user}
           rows={1}
           className="flex-1 min-w-0 bg-transparent text-sm resize-none outline-none placeholder:text-muted-foreground min-h-[20px] max-h-[80px] leading-5"
@@ -1143,7 +1143,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
                 ))}
               </div>
             ) : (
-              <div className="flex justify-center items-center py-8 text-xs text-muted-foreground">Selecciona una categorÃ­a o busca</div>
+              <div className="flex justify-center items-center py-8 text-xs text-muted-foreground">Selecciona una categoría o busca</div>
             )}
           </div>
           <div className="px-3 py-1.5 border-t border-border/30 flex justify-end">

@@ -29,7 +29,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 
 const categories = [
   { id: "limpieza", label: "Limpieza", icon: Trash2 },
-  { id: "clasificacion", label: "ClasificaciÃ³n de Residuos", icon: Recycle },
+  { id: "clasificacion", label: "Clasificación de Residuos", icon: Recycle },
   { id: "compostaje", label: "Compostaje", icon: Leaf },
   { id: "reciclaje", label: "Reciclaje", icon: Recycle },
 ];
@@ -186,7 +186,7 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
       <g className="care-smile">
         <path d="M12 25.5 Q18 30 24 25.5" stroke="#C47A00" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
       </g>
-      {/* corazÃ³n flotante bonito */}
+      {/* corazón flotante bonito */}
       <g className="care-heart">
         <path d="M18 13 C18 13 12.5 9 12.5 5.8 a3.2 3.2 0 0 1 5.5-.5 a3.2 3.2 0 0 1 5.5.5 C23.5 9 18 13 18 13Z" fill="url(#care-heart-g)"/>
         <ellipse cx="15.5" cy="5.8" rx="1.2" ry="0.7" fill="#fff" opacity="0.5" transform="rotate(-25 15.5 5.8)"/>
@@ -206,7 +206,7 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
 
   /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      ME DIVIERTE â€” cara riendo a carcajadas, ojos cerrados
-     colores: #FFD93D cara, ojos en arco, boca naranja cÃ¡lido
+     colores: #FFD93D cara, ojos en arco, boca naranja cálido
   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
   haha: ({ size = 22 }) => (
     <svg width={size} height={size} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -222,7 +222,7 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
       </defs>
       {/* toda la cabeza se balancea en hover */}
       <g className="haha-head">
-        {/* cara redonda cÃ¡lida */}
+        {/* cara redonda cálida */}
         <circle cx="18" cy="18" r="15" fill="url(#haha-face-g)"/>
         <ellipse cx="13" cy="11" rx="5" ry="3" fill="#fff" opacity="0.15"/>
         {/* mejillas sonrojadas suaves */}
@@ -243,7 +243,7 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
           <path d="M9 18 Q8 16 9 14.5 Q10 16 9 18Z" fill="#7EC8F0"/>
           <ellipse cx="8.7" cy="15.5" rx="0.55" ry="0.4" fill="#fff" opacity="0.7"/>
         </g>
-        {/* lÃ¡grima derecha */}
+        {/* lágrima derecha */}
         <g className="haha-tear-r">
           <path d="M27 18 Q26 16 27 14.5 Q28 16 27 18Z" fill="#7EC8F0"/>
           <ellipse cx="26.7" cy="15.5" rx="0.55" ry="0.4" fill="#fff" opacity="0.7"/>
@@ -343,7 +343,7 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
       <g className="sad-face">
         <circle cx="18" cy="19" r="14" fill="url(#sad-face-g)"/>
         <ellipse cx="13" cy="12" rx="5" ry="2.5" fill="#fff" opacity="0.2"/>
-        {/* mejillas pÃ¡lidas */}
+        {/* mejillas pálidas */}
         <ellipse cx="9" cy="24" rx="3.5" ry="1.8" fill="#6B9FD4" opacity="0.28"/>
         <ellipse cx="27" cy="24" rx="3.5" ry="1.8" fill="#6B9FD4" opacity="0.28"/>
       </g>
@@ -381,7 +381,7 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
         <path d="M12 21.5 Q11 19 12 17 Q13 19 12 21.5Z" fill="#7EC8F0"/>
         <ellipse cx="11.7" cy="18.5" rx="0.5" ry="0.4" fill="#fff" opacity="0.65"/>
       </g>
-      {/* lÃ¡grima derecha */}
+      {/* lágrima derecha */}
       <g className="sad-tear-r">
         <path d="M24 21.5 Q23 19 24 17 Q25 19 24 21.5Z" fill="#7EC8F0"/>
         <ellipse cx="23.7" cy="18.5" rx="0.5" ry="0.4" fill="#fff" opacity="0.65"/>
@@ -407,11 +407,11 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
       </defs>
       {/* glow naranja suave â€” pulsa */}
       <circle cx="18" cy="19" r="15.5" fill="#FF8C5A" className="angry-glow" opacity="0.2"/>
-      {/* cara roja cÃ¡lida */}
+      {/* cara roja cálida */}
       <g className="angry-face">
         <circle cx="18" cy="19" r="13.5" fill="url(#angry-face-g)"/>
         <ellipse cx="13" cy="12" rx="5" ry="2.5" fill="#fff" opacity="0.12"/>
-        {/* mejillas mÃ¡s intensas */}
+        {/* mejillas más intensas */}
         <ellipse cx="8.5" cy="23" rx="3.8" ry="2" fill="#C43000" opacity="0.35"/>
         <ellipse cx="27.5" cy="23" rx="3.8" ry="2" fill="#C43000" opacity="0.35"/>
       </g>
@@ -429,7 +429,7 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
         <ellipse cx="12" cy="19.3" rx="2" ry="1.8" fill="url(#angry-eye-g)"/>
         <ellipse cx="12" cy="19.3" rx="1.1" ry="1" fill="#1A0000"/>
         <circle cx="12.8" cy="18.6" r="0.5" fill="#fff"/>
-        {/* pÃ¡rpado superior */}
+        {/* párpado superior */}
         <path d="M8.8 17 Q12 15.5 15.2 17" fill="#E84000"/>
       </g>
       {/* ojo derecho entrecerrado */}
@@ -443,7 +443,7 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
       {/* boca apretada â€” expresiva pero no horrible */}
       <g className="angry-mouth">
         <path d="M10 26.5 Q18 22.5 26 26.5" stroke="#6B1000" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-        {/* pequeÃ±os dientes apretados */}
+        {/* pequeños dientes apretados */}
         <path d="M13 26 Q18 23.5 23 26" fill="#fff" opacity="0.85"/>
       </g>
       {/* vena pequeÃ±a discreta â€” pulsa */}
@@ -524,7 +524,7 @@ export default function Community() {
           const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
           const d = await r.json();
           const addr = d.address;
-          const label = addr.city || addr.town || addr.village || addr.municipality || addr.county || "UbicaciÃ³n";
+          const label = addr.city || addr.town || addr.village || addr.municipality || addr.county || "Ubicación";
           const country = addr.country || "";
           setLocation(`${label}${country ? ", " + country : ""}`);
         } catch {
@@ -612,10 +612,10 @@ export default function Community() {
       setPreviewImages([]);
       setLocation(null);
       setIsDialogOpen(false);
-      toast({ title: "Â¡Publicado!", description: "Tu aporte ambiental ha sido compartido con la comunidad." });
+      toast({ title: "¡Publicado!", description: "Tu aporte ambiental ha sido compartido con la comunidad." });
     },
     onError: () => {
-      toast({ variant: "destructive", title: "Error", description: "No se pudo publicar. Â¿EstÃ¡s conectado?" });
+      toast({ variant: "destructive", title: "Error", description: "No se pudo publicar. ¿Estás conectado?" });
     },
   });
 
@@ -660,11 +660,11 @@ export default function Community() {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>CategorÃ­a</FormLabel>
+                      <FormLabel>Categoría</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecciona una categorÃ­a" />
+                            <SelectValue placeholder="Selecciona una categoría" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -688,7 +688,7 @@ export default function Community() {
                     <FormItem>
                       <FormControl>
                         <Textarea
-                          placeholder="Comparte cÃ³mo clasificaste tus residuos, tu proceso de compostaje o tu jornada de limpieza..."
+                          placeholder="Comparte cómo clasificaste tus residuos, tu proceso de compostaje o tu jornada de limpieza..."
                           className="min-h-[120px]"
                           {...field}
                         />
@@ -763,7 +763,7 @@ export default function Community() {
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                     >
                       {gettingLocation ? <Loader2 className="h-4 w-4 animate-spin text-red-400" /> : <MapPin className="h-4 w-4 text-red-400" />}
-                      UbicaciÃ³n
+                      Ubicación
                     </button>
                   </div>
                   <Button type="submit" disabled={mutation.isPending} size="sm" className="rounded-full gap-2">
@@ -839,7 +839,7 @@ export default function Community() {
         {sortedPosts.length === 0 && (
           <div className="text-center py-16 text-muted-foreground">
             <Leaf className="h-12 w-12 mx-auto mb-3 opacity-30" />
-            <p>AÃºn no hay publicaciones. Â¡SÃ© el primero en compartir!</p>
+            <p>Aún no hay publicaciones. ¡Sé el primero en compartir!</p>
           </div>
         )}
       </div>
@@ -1042,7 +1042,7 @@ function PostMenu({ post }: { post: any }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.posts.list.path] });
-      toast({ title: "PublicaciÃ³n eliminada" });
+      toast({ title: "Publicación eliminada" });
       setConfirmDelete(false);
     },
     onError: () => toast({ variant: "destructive", title: "Error al eliminar" }),
@@ -1060,7 +1060,7 @@ function PostMenu({ post }: { post: any }) {
       queryClient.invalidateQueries({ queryKey: [api.posts.list.path] });
       setEditing(false);
       setOpen(false);
-      toast({ title: "PublicaciÃ³n editada" });
+      toast({ title: "Publicación editada" });
     },
     onError: () => toast({ variant: "destructive", title: "Error al editar" }),
   });
@@ -1131,11 +1131,11 @@ function PostMenu({ post }: { post: any }) {
         <DialogContent className="sm:max-w-[380px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-500">
-              <Trash2 className="h-5 w-5" /> Eliminar publicaciÃ³n
+              <Trash2 className="h-5 w-5" /> Eliminar publicación
             </DialogTitle>
           </DialogHeader>
           <div className="pt-2 space-y-4">
-            <p className="text-sm text-muted-foreground">Â¿Seguro que quieres eliminar esta publicaciÃ³n? Esta acciÃ³n no se puede deshacer y perderÃ¡s 5 puntos.</p>
+            <p className="text-sm text-muted-foreground">¿Seguro que quieres eliminar esta publicación? Esta acción no se puede deshacer y perderás 5 puntos.</p>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setConfirmDelete(false)}>Cancelar</Button>
               <Button variant="destructive" onClick={() => deletePost.mutate()} disabled={deletePost.isPending}>
@@ -1151,14 +1151,14 @@ function PostMenu({ post }: { post: any }) {
       <Dialog open={editing} onOpenChange={setEditing}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Editar publicaciÃ³n</DialogTitle>
+            <DialogTitle>Editar publicación</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 pt-2">
             <Textarea
               value={editContent}
               onChange={e => setEditContent(e.target.value)}
               className="min-h-[100px]"
-              placeholder="Contenido de la publicaciÃ³n..."
+              placeholder="Contenido de la publicación..."
             />
             {/* Image section */}
             {editImageUrls.length > 0 && (
@@ -1181,7 +1181,7 @@ function PostMenu({ post }: { post: any }) {
               onClick={() => editFileRef.current?.click()}
               disabled={editImageUrls.length >= 10 || editUploading}>
               {editUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
-              {editUploading ? "Subiendo..." : editImageUrls.length > 0 ? `AÃ±adir fotos (${editImageUrls.length}/10)` : "Agregar fotos"}
+              {editUploading ? "Subiendo..." : editImageUrls.length > 0 ? `Añadir fotos (${editImageUrls.length}/10)` : "Agregar fotos"}
             </Button>
             <input ref={editFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleEditFileChange} />
             <div className="flex justify-end gap-2">
@@ -1288,7 +1288,7 @@ function CommentMenu({ comment, postId }: { comment: any; postId: number }) {
             </DialogTitle>
           </DialogHeader>
           <div className="pt-2 space-y-4">
-            <p className="text-sm text-muted-foreground">Â¿Seguro que quieres eliminar este comentario? Esta acciÃ³n no se puede deshacer.</p>
+            <p className="text-sm text-muted-foreground">¿Seguro que quieres eliminar este comentario? Esta acción no se puede deshacer.</p>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setConfirmDelete(false)}>Cancelar</Button>
               <Button variant="destructive" onClick={() => deleteComment.mutate()} disabled={deleteComment.isPending}>
@@ -1837,7 +1837,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
         </div>
       ) : sortedComments.length === 0 ? (
         <p className="text-xs text-muted-foreground text-center py-2">
-          Sin comentarios aÃºn. Â¡SÃ© el primero!
+          Sin comentarios aún. ¡Sé el primero!
         </p>
       ) : (
         <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
@@ -1870,7 +1870,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
                   )}
                 </div>
                 <div className="text-[10px] text-muted-foreground mt-0.5 ml-2">
-                  {format(new Date(c.createdAt), "d MMM Â· HH:mm", { locale: es })}
+                  {format(new Date(c.createdAt), "d MMM · HH:mm", { locale: es })}
                 </div>
               </div>
             </motion.div>
@@ -2034,7 +2034,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
                     </div>
                   ) : (
                     <div className="flex justify-center items-center py-8 text-xs text-muted-foreground">
-                      Selecciona una categorÃ­a o busca
+                      Selecciona una categoría o busca
                     </div>
                   )}
                 </div>
@@ -2054,7 +2054,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
                 ref={commentInputRef}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                placeholder={user ? `Comentar como ${user.name}...` : "Inicia sesiÃ³n para comentar"}
+                placeholder={user ? `Comentar como ${user.name}...` : "Inicia sesión para comentar"}
                 disabled={!user}
                 rows={1}
                 className="flex-1 min-w-0 bg-transparent text-sm resize-none outline-none placeholder:text-muted-foreground min-h-[20px] max-h-[80px] leading-5"

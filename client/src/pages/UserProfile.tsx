@@ -455,7 +455,7 @@ export default function UserProfile() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
-      toast({ variant: "destructive", title: "Imagen muy grande", description: "MÃ¡ximo 10MB permitido." });
+      toast({ variant: "destructive", title: "Imagen muy grande", description: "Máximo 10MB permitido." });
       return;
     }
     // Open the cropper with the raw image
@@ -638,14 +638,14 @@ export default function UserProfile() {
 
                         {/* Bio */}
                         <div className="space-y-2">
-                          <Label htmlFor="bio">BiografÃ­a</Label>
+                          <Label htmlFor="bio">Biografía</Label>
                           <Input
                             id="bio"
                             value={editData.bio || ""}
                             onChange={(e) =>
                               setEditData((prev: any) => ({ ...prev, bio: e.target.value }))
                             }
-                            placeholder="CuÃ©ntanos sobre ti..."
+                            placeholder="Cuéntanos sobre ti..."
                             maxLength={160}
                           />
                           <p className="text-xs text-muted-foreground">
@@ -682,9 +682,9 @@ export default function UserProfile() {
                           />
                         </div>
 
-                        {/* PaÃ­s */}
+                        {/* País */}
                         <div className="space-y-2">
-                          <Label htmlFor="country">PaÃ­s</Label>
+                          <Label htmlFor="country">País</Label>
                           <Input
                             id="country"
                             value={editData.country || ""}
@@ -694,7 +694,7 @@ export default function UserProfile() {
                                 country: e.target.value,
                               }))
                             }
-                            placeholder="Tu paÃ­s"
+                            placeholder="Tu país"
                           />
                         </div>
 
@@ -725,7 +725,7 @@ export default function UserProfile() {
         </Card>
       </motion.div>
 
-      {/* EstadÃ­sticas */}
+      {/* Estadísticas */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6 text-center">
@@ -822,7 +822,7 @@ export default function UserProfile() {
           ) : (
             <Card>
               <CardContent className="pt-12 pb-12 text-center text-muted-foreground">
-                <p>Este usuario aÃºn no ha publicado nada</p>
+                <p>Este usuario aún no ha publicado nada</p>
               </CardContent>
             </Card>
           )}
@@ -861,7 +861,7 @@ export default function UserProfile() {
             <Card>
               <CardContent className="pt-12 pb-12 text-center text-muted-foreground">
                 <Award className="h-12 w-12 mx-auto mb-2 opacity-30" />
-                <p>Este usuario aÃºn no ha desbloqueado logros</p>
+                <p>Este usuario aún no ha desbloqueado logros</p>
               </CardContent>
             </Card>
           )}
@@ -1404,7 +1404,7 @@ function CommentMenu({ comment, postId }: { comment: any; postId: number }) {
             </DialogTitle>
           </DialogHeader>
           <div className="pt-2 space-y-4">
-            <p className="text-sm text-muted-foreground">Â¿Seguro que quieres eliminar este comentario? Esta acciÃ³n no se puede deshacer.</p>
+            <p className="text-sm text-muted-foreground">¿Seguro que quieres eliminar este comentario? Esta acción no se puede deshacer.</p>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setConfirmDelete(false)}>Cancelar</Button>
               <Button variant="destructive" onClick={() => deleteComment.mutate()} disabled={deleteComment.isPending}>
@@ -1678,7 +1678,7 @@ function PostMenu({ post }: { post: any }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.posts.list.path] });
-      toast({ title: "PublicaciÃ³n eliminada" });
+      toast({ title: "Publicación eliminada" });
       setConfirmDelete(false);
     },
     onError: () => toast({ variant: "destructive", title: "Error al eliminar" }),
@@ -1695,7 +1695,7 @@ function PostMenu({ post }: { post: any }) {
       queryClient.invalidateQueries({ queryKey: [api.posts.list.path] });
       setEditing(false);
       setOpen(false);
-      toast({ title: "PublicaciÃ³n editada" });
+      toast({ title: "Publicación editada" });
     },
     onError: () => toast({ variant: "destructive", title: "Error al editar" }),
   });
@@ -1765,11 +1765,11 @@ function PostMenu({ post }: { post: any }) {
         <DialogContent className="sm:max-w-[380px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-500">
-              <Trash2 className="h-5 w-5" /> Eliminar publicaciÃ³n
+              <Trash2 className="h-5 w-5" /> Eliminar publicación
             </DialogTitle>
           </DialogHeader>
           <div className="pt-2 space-y-4">
-            <p className="text-sm text-muted-foreground">Â¿Seguro que quieres eliminar esta publicaciÃ³n? Esta acciÃ³n no se puede deshacer y perderÃ¡s 5 puntos.</p>
+            <p className="text-sm text-muted-foreground">¿Seguro que quieres eliminar esta publicación? Esta acción no se puede deshacer y perderás 5 puntos.</p>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setConfirmDelete(false)}>Cancelar</Button>
               <Button variant="destructive" onClick={() => deletePost.mutate()} disabled={deletePost.isPending}>
@@ -1784,14 +1784,14 @@ function PostMenu({ post }: { post: any }) {
       <Dialog open={editing} onOpenChange={setEditing}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Editar publicaciÃ³n</DialogTitle>
+            <DialogTitle>Editar publicación</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 pt-2">
             <Textarea
               value={editContent}
               onChange={e => setEditContent(e.target.value)}
               className="min-h-[100px]"
-              placeholder="Contenido de la publicaciÃ³n..."
+              placeholder="Contenido de la publicación..."
             />
             {editImageUrls.length > 0 && (
               <div className={`grid gap-1 rounded-lg overflow-hidden border ${editImageUrls.length === 1 ? "grid-cols-1" : editImageUrls.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
@@ -1813,7 +1813,7 @@ function PostMenu({ post }: { post: any }) {
               onClick={() => editFileRef.current?.click()}
               disabled={editImageUrls.length >= 10 || editUploading}>
               {editUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
-              {editUploading ? "Subiendo..." : editImageUrls.length > 0 ? `AÃ±adir fotos (${editImageUrls.length}/10)` : "Agregar fotos"}
+              {editUploading ? "Subiendo..." : editImageUrls.length > 0 ? `Añadir fotos (${editImageUrls.length}/10)` : "Agregar fotos"}
             </Button>
             <input ref={editFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleEditFileChange} />
             <div className="flex justify-end gap-2">

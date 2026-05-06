@@ -20,7 +20,8 @@ const scryptAsync = promisify(scrypt);
 
 import { productsSeed } from "./products_seed.js";
 import { db } from "./db.js";
-import { users } from "../shared/schema.js";
+import { users, directMessages } from "../shared/schema.js";
+import { eq, and, or, desc, sql } from "drizzle-orm";
 
 async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
@@ -1184,6 +1185,292 @@ export async function registerRoutes(
       res.status(500).json({ message: "Internal server error" });
     }
   });
+  // ─── Direct Messaging (Chat en vivo) ────────────────────────────────────────
+
+  // GET /api/messages?friendId=X — get messages between current user and friend
+  app.get('/api/messages', async (req, res) => {
+    try {
+      const user = req.user as User | undefined;
+      if (!user) return res.status(401).json({ message: "No autenticado" });
+
+      const friendId = parseInt(req.query.friendId as string);
+      if (!friendId || isNaN(friendId)) return res.status(400).json({ message: "friendId requerido" });
+
+      const msgs = await db
+        .select()
+        .from(directMessages)
+        .where(
+          or(
+            and(eq(directMessages.senderId, user.id), eq(directMessages.receiverId, friendId)),
+            and(eq(directMessages.senderId, friendId), eq(directMessages.receiverId, user.id))
+          )
+        )
+        .orderBy(directMessages.createdAt)
+        .limit(200);
+
+      // Attach sender info
+      const msgsWithSender = await Promise.all(msgs.map(async (m) => {
+        const sender = await storage.getUser(m.senderId);
+        return {
+          ...m,
+          sender: sender ? { id: sender.id, name: sender.name, avatar: sender.avatar } : null,
+        };
+      }));
+
+      // Mark unread messages from friend as read
+      await db
+        .update(directMessages)
+        .set({ read: true })
+        .where(
+          and(
+            eq(directMessages.senderId, friendId),
+            eq(directMessages.receiverId, user.id),
+            eq(directMessages.read, false)
+          )
+        );
+
+      res.json(msgsWithSender);
+    } catch (err: any) {
+      console.error("Error GET /api/messages:", err.message);
+      res.status(500).json({ message: "Error al obtener mensajes" });
+    }
+  });
+
+  // GET /api/messages/:friendId — path-param fallback
+  app.get('/api/messages/:friendId', async (req, res) => {
+    try {
+      const user = req.user as User | undefined;
+      if (!user) return res.status(401).json({ message: "No autenticado" });
+
+      const friendId = parseInt(req.params.friendId);
+      if (!friendId || isNaN(friendId)) return res.status(400).json({ message: "friendId inválido" });
+
+      const msgs = await db
+        .select()
+        .from(directMessages)
+        .where(
+          or(
+            and(eq(directMessages.senderId, user.id), eq(directMessages.receiverId, friendId)),
+            and(eq(directMessages.senderId, friendId), eq(directMessages.receiverId, user.id))
+          )
+        )
+        .orderBy(directMessages.createdAt)
+        .limit(200);
+
+      const msgsWithSender = await Promise.all(msgs.map(async (m) => {
+        const sender = await storage.getUser(m.senderId);
+        return {
+          ...m,
+          sender: sender ? { id: sender.id, name: sender.name, avatar: sender.avatar } : null,
+        };
+      }));
+
+      res.json(msgsWithSender);
+    } catch (err: any) {
+      console.error("Error GET /api/messages/:friendId:", err.message);
+      res.status(500).json({ message: "Error al obtener mensajes" });
+    }
+  });
+
+  // POST /api/messages — send a message (text, image, file, gif)
+  app.post('/api/messages', async (req, res) => {
+    try {
+      const user = req.user as User | undefined;
+      if (!user) return res.status(401).json({ message: "No autenticado" });
+
+      const { receiverId, content, type, attachmentUrl, attachmentName, attachmentSize } = req.body;
+      if (!receiverId) return res.status(400).json({ message: "receiverId requerido" });
+
+      const msgType = type || "text";
+      if (msgType === "text" && (!content || !content.trim())) {
+        return res.status(400).json({ message: "Mensaje vacío" });
+      }
+
+      const [msg] = await db
+        .insert(directMessages)
+        .values({
+          senderId: user.id,
+          receiverId: parseInt(receiverId),
+          content: content || null,
+          type: msgType,
+          attachmentUrl: attachmentUrl || null,
+          attachmentName: attachmentName || null,
+          attachmentSize: attachmentSize || null,
+        })
+        .returning();
+
+      const senderInfo = { id: user.id, name: user.name, avatar: (user as any).avatar };
+      const fullMsg = { ...msg, sender: senderInfo };
+
+      // Broadcast via WebSocket to the receiver
+      broadcastToUser(parseInt(receiverId), { type: "new_message", message: fullMsg });
+      // Also echo back to sender so all their tabs stay synced
+      broadcastToUser(user.id, { type: "new_message", message: fullMsg });
+
+      res.status(201).json(fullMsg);
+    } catch (err: any) {
+      console.error("Error POST /api/messages:", err.message);
+      res.status(500).json({ message: "Error al enviar mensaje" });
+    }
+  });
+
+  // POST /api/messages/upload — upload file/image for chat via Cloudinary
+  app.post('/api/messages/upload', async (req, res) => {
+    try {
+      const user = req.user as User | undefined;
+      if (!user) return res.status(401).json({ message: "No autenticado" });
+
+      const { imageBase64 } = req.body;
+      if (!imageBase64) return res.status(400).json({ message: "No se proporcionó archivo" });
+
+      const result = await uploadToCloudinary(imageBase64);
+      res.json({ url: result.secure_url || result.url });
+    } catch (err: any) {
+      console.error("Error uploading chat file:", err.message);
+      res.status(500).json({ message: "Error al subir archivo" });
+    }
+  });
+
+  // GET /api/conversations — list of users I've chatted with, with last message
+  app.get('/api/conversations', async (req, res) => {
+    try {
+      const user = req.user as User | undefined;
+      if (!user) return res.status(401).json({ message: "No autenticado" });
+
+      // Get distinct conversation partners
+      const sent = await db
+        .selectDistinct({ partnerId: directMessages.receiverId })
+        .from(directMessages)
+        .where(eq(directMessages.senderId, user.id));
+
+      const received = await db
+        .selectDistinct({ partnerId: directMessages.senderId })
+        .from(directMessages)
+        .where(eq(directMessages.receiverId, user.id));
+
+      const partnerIds = [...new Set([...sent.map(s => s.partnerId), ...received.map(r => r.partnerId)])];
+
+      const conversations = await Promise.all(partnerIds.map(async (partnerId) => {
+        const partner = await storage.getUser(partnerId);
+        if (!partner) return null;
+
+        // Get last message
+        const [lastMsg] = await db
+          .select()
+          .from(directMessages)
+          .where(
+            or(
+              and(eq(directMessages.senderId, user.id), eq(directMessages.receiverId, partnerId)),
+              and(eq(directMessages.senderId, partnerId), eq(directMessages.receiverId, user.id))
+            )
+          )
+          .orderBy(desc(directMessages.createdAt))
+          .limit(1);
+
+        // Count unread
+        const [unreadResult] = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(directMessages)
+          .where(
+            and(
+              eq(directMessages.senderId, partnerId),
+              eq(directMessages.receiverId, user.id),
+              eq(directMessages.read, false)
+            )
+          );
+
+        return {
+          partner: { id: partner.id, name: partner.name, avatar: partner.avatar },
+          lastMessage: lastMsg || null,
+          unreadCount: Number(unreadResult?.count || 0),
+        };
+      }));
+
+      // Filter nulls and sort by last message time
+      const valid = conversations.filter(Boolean).sort((a: any, b: any) => {
+        const aTime = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0;
+        const bTime = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0;
+        return bTime - aTime;
+      });
+
+      res.json(valid);
+    } catch (err: any) {
+      console.error("Error GET /api/conversations:", err.message);
+      res.status(500).json({ message: "Error al obtener conversaciones" });
+    }
+  });
+
+  // ─── WebSocket Server for real-time chat ──────────────────────────────────────
+  const { WebSocketServer } = await import("ws");
+  const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
+
+  // Map userId -> Set of WebSocket connections (supports multiple tabs)
+  const wsClients = new Map<number, Set<any>>();
+
+  wss.on("connection", (ws: any, req: any) => {
+    let userId: number | null = null;
+
+    // Parse session to identify user (best-effort)
+    // The client will send an "auth" message with their userId after connecting
+    ws.on("message", (raw: any) => {
+      try {
+        const data = JSON.parse(raw.toString());
+
+        if (data.type === "auth" && data.userId) {
+          userId = data.userId;
+          if (!wsClients.has(userId)) wsClients.set(userId, new Set());
+          wsClients.get(userId)!.add(ws);
+          ws.send(JSON.stringify({ type: "auth_ok" }));
+        }
+
+        if (data.type === "typing" && userId && data.receiverId) {
+          broadcastToUser(data.receiverId, {
+            type: "typing",
+            senderId: userId,
+          });
+        }
+
+        if (data.type === "read" && userId && data.senderId) {
+          // Mark messages as read
+          db.update(directMessages)
+            .set({ read: true })
+            .where(
+              and(
+                eq(directMessages.senderId, data.senderId),
+                eq(directMessages.receiverId, userId),
+                eq(directMessages.read, false)
+              )
+            )
+            .then(() => {
+              broadcastToUser(data.senderId, {
+                type: "messages_read",
+                readBy: userId,
+              });
+            });
+        }
+      } catch (e) {
+        // ignore malformed messages
+      }
+    });
+
+    ws.on("close", () => {
+      if (userId && wsClients.has(userId)) {
+        wsClients.get(userId)!.delete(ws);
+        if (wsClients.get(userId)!.size === 0) wsClients.delete(userId);
+      }
+    });
+  });
+
+  function broadcastToUser(targetUserId: number, payload: any) {
+    const sockets = wsClients.get(targetUserId);
+    if (!sockets) return;
+    const msg = JSON.stringify(payload);
+    for (const ws of sockets) {
+      try {
+        if (ws.readyState === 1) ws.send(msg); // 1 = OPEN
+      } catch (e) {}
+    }
+  }
 
   return httpServer;
 }
