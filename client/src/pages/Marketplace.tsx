@@ -49,9 +49,11 @@ export default function Marketplace() {
         if (selectedCategory !== "all") params.append("category", selectedCategory);
         if (priceRange.min) params.append("minPrice", priceRange.min.toString());
         if (priceRange.max) params.append("maxPrice", priceRange.max.toString());
-        return apiRequest("GET", `/api/marketplace/search?${params.toString()}`);
+        const res = await apiRequest("GET", `/api/marketplace/search?${params.toString()}`);
+        return res.json();
       }
-      return apiRequest("GET", "/api/marketplace/products");
+      const res = await apiRequest("GET", "/api/marketplace/products");
+      return res.json();
     },
   });
 
