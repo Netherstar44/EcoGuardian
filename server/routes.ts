@@ -881,6 +881,42 @@ export async function registerRoutes(
     }
   });
 
+  app.get('/api/marketplace/seed', async (req, res) => {
+    try {
+      // Dynamically import to avoid loading it on every request if not needed
+      const { productsSeed } = await import("./products_seed.ts" as any);
+      const existing = await storage.getMarketplaceProducts();
+      if (existing.length > 0) {
+        return res.json({ message: "Marketplace is already seeded", count: existing.length });
+      }
+
+      // get first user
+      const { db } = await import("./db.ts" as any);
+      const { users } = await import("../shared/schema.ts" as any);
+      const allUsers = await db.select().from(users).limit(1);
+      const sellerId = allUsers.length > 0 ? allUsers[0].id : 1;
+      
+      let count = 0;
+      for (const prod of productsSeed) {
+        await storage.createMarketplaceProduct({
+          sellerId,
+          title: prod.title,
+          description: prod.description,
+          category: prod.category,
+          price: prod.price,
+          quantity: prod.quantity,
+          imageUrl: prod.imageUrl,
+          status: 'available'
+        });
+        count++;
+      }
+      res.json({ message: "Successfully seeded marketplace", count });
+    } catch (err: any) {
+      console.error(err);
+      res.status(500).json({ message: "Internal server error", error: err.message });
+    }
+  });
+
   app.get('/api/marketplace/search', async (req, res) => {
     try {
       const { q, category, minPrice, maxPrice } = req.query;
