@@ -1,3 +1,4 @@
+﻿import { shareContent } from "@/lib/share";
 import { apiBase } from "@/lib/queryClient";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -28,22 +29,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 
 const categories = [
   { id: "limpieza", label: "Limpieza", icon: Trash2 },
-  { id: "clasificacion", label: "Clasificación de Residuos", icon: Recycle },
+  { id: "clasificacion", label: "ClasificaciÃ³n de Residuos", icon: Recycle },
   { id: "compostaje", label: "Compostaje", icon: Leaf },
   { id: "reciclaje", label: "Reciclaje", icon: Recycle },
 ];
 
-// ─── Reaction facial animation styles ─────────────────────────────────────────
+// â”€â”€â”€ Reaction facial animation styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const reactionAnimStyles = `
-  /* ── LIKE: thumb rocks up with finger curl ── */
+  /* â”€â”€ LIKE: thumb rocks up with finger curl â”€â”€ */
   @keyframes rxn-like-thumb { 0%,100%{transform:rotate(0deg) translateY(0)} 25%{transform:rotate(-18deg) translateY(-1px)} 55%{transform:rotate(12deg) translateY(1px)} 75%{transform:rotate(-8deg) translateY(0)} }
   .rxn-hover-like:hover svg { animation: rxn-like-thumb 0.7s cubic-bezier(.36,.07,.19,.97) infinite; transform-origin: bottom center; }
 
-  /* ── LOVE: heart beats with glow ── */
+  /* â”€â”€ LOVE: heart beats with glow â”€â”€ */
   @keyframes rxn-love-beat { 0%,100%{transform:scale(1)} 15%{transform:scale(1.22)} 30%{transform:scale(1)} 45%{transform:scale(1.15)} 60%{transform:scale(1)} }
   .rxn-hover-love:hover svg { animation: rxn-love-beat 0.75s ease infinite; transform-origin: center; }
 
-  /* ── CARE: face eyes look up at heart, arms squeeze ── */
+  /* â”€â”€ CARE: face eyes look up at heart, arms squeeze â”€â”€ */
   @keyframes rxn-care-eye-l { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-1.5px)} }
   @keyframes rxn-care-eye-r { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-1.5px)} }
   @keyframes rxn-care-heart  { 0%,100%{transform:scale(1) translateY(0)} 40%{transform:scale(1.18) translateY(-1px)} 70%{transform:scale(0.92) translateY(0.5px)} }
@@ -57,7 +58,7 @@ const reactionAnimStyles = `
   .rxn-hover-care:hover .care-arm-r { animation: rxn-care-arm-r 1.1s ease infinite; transform-origin: 26px 20px; }
   .rxn-hover-care:hover .care-smile { animation: rxn-care-smile 1.1s ease infinite; transform-origin: 18px 27px; }
 
-  /* ── HAHA: head shakes, eyes squint, tears fall, mouth bounces ── */
+  /* â”€â”€ HAHA: head shakes, eyes squint, tears fall, mouth bounces â”€â”€ */
   @keyframes rxn-haha-head   { 0%,100%{transform:rotate(0deg)} 20%{transform:rotate(-8deg)} 40%{transform:rotate(9deg)} 60%{transform:rotate(-6deg)} 80%{transform:rotate(5deg)} }
   @keyframes rxn-haha-eye-l  { 0%,100%{transform:scaleY(1) scaleX(1)} 30%{transform:scaleY(0.3) scaleX(1.2)} 60%{transform:scaleY(0.5) scaleX(1.1)} }
   @keyframes rxn-haha-eye-r  { 0%,100%{transform:scaleY(1) scaleX(1)} 25%{transform:scaleY(0.3) scaleX(1.2)} 55%{transform:scaleY(0.5) scaleX(1.1)} }
@@ -73,7 +74,7 @@ const reactionAnimStyles = `
   .rxn-hover-haha:hover .haha-tear-r { animation: rxn-haha-tear-r 0.9s ease infinite 0.2s; transform-origin: 27px 17px; }
   .rxn-hover-haha:hover .haha-cheek  { animation: rxn-haha-cheek 0.55s ease infinite; }
 
-  /* ── WOW: eyebrows rise, eyes widen, mouth opens slowly ── */
+  /* â”€â”€ WOW: eyebrows rise, eyes widen, mouth opens slowly â”€â”€ */
   @keyframes rxn-wow-brow-l  { 0%,100%{transform:translateY(0)} 40%{transform:translateY(-2.5px)} 70%{transform:translateY(-1.5px)} }
   @keyframes rxn-wow-brow-r  { 0%,100%{transform:translateY(0)} 45%{transform:translateY(-2.5px)} 70%{transform:translateY(-1.5px)} }
   @keyframes rxn-wow-eye-l   { 0%,100%{transform:scale(1)} 40%{transform:scale(1.25)} }
@@ -91,7 +92,7 @@ const reactionAnimStyles = `
   .rxn-hover-wow:hover .wow-pupil-r{ animation: rxn-wow-pupil-r 1.2s ease infinite; }
   .rxn-hover-wow:hover .wow-sweat  { animation: rxn-wow-sweat 1.8s ease infinite 0.6s; }
 
-  /* ── SAD: eyebrows droop, eyes water, mouth curves down, tear drops ── */
+  /* â”€â”€ SAD: eyebrows droop, eyes water, mouth curves down, tear drops â”€â”€ */
   @keyframes rxn-sad-brow-l  { 0%,100%{transform:rotate(0deg) translateY(0)} 50%{transform:rotate(12deg) translateY(1.5px)} }
   @keyframes rxn-sad-brow-r  { 0%,100%{transform:rotate(0deg) translateY(0)} 50%{transform:rotate(-12deg) translateY(1.5px)} }
   @keyframes rxn-sad-eye-l   { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(0.75)} }
@@ -108,7 +109,7 @@ const reactionAnimStyles = `
   .rxn-hover-sad:hover .sad-tear-r { animation: rxn-sad-tear-r 2s ease infinite 0.5s; transform-origin: 24px 19px; }
   .rxn-hover-sad:hover .sad-face   { animation: rxn-sad-face 1.6s ease infinite; }
 
-  /* ── ANGRY: veins pulse, brows slam down, eyes narrow, face reddens, steam ── */
+  /* â”€â”€ ANGRY: veins pulse, brows slam down, eyes narrow, face reddens, steam â”€â”€ */
   @keyframes rxn-angry-face  { 0%,100%{transform:scale(1)} 30%{transform:scale(1.04)} 60%{transform:scale(0.98)} }
   @keyframes rxn-angry-brow-l{ 0%,100%{transform:rotate(0deg) translateY(0)} 40%{transform:rotate(20deg) translateY(2px)} 70%{transform:rotate(15deg) translateY(1.5px)} }
   @keyframes rxn-angry-brow-r{ 0%,100%{transform:rotate(0deg) translateY(0)} 40%{transform:rotate(-20deg) translateY(2px)} 70%{transform:rotate(-15deg) translateY(1.5px)} }
@@ -131,7 +132,7 @@ const reactionAnimStyles = `
   .rxn-hover-angry:hover .angry-glow  { animation: rxn-angry-glow 0.5s ease infinite; }
 `;
 
-// ─── Custom SVG reaction icons (fully animated on hover) ──────────────────────
+// â”€â”€â”€ Custom SVG reaction icons (fully animated on hover) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const ReactionIcons: Record<string, (props: { size?: number; color?: string }) => JSX.Element> = {
   like: ({ size = 22, color = "#1877F2" }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -144,10 +145,10 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
     </svg>
   ),
 
-  /* ══════════════════════════════════════════════════════
-     ME IMPORTA — cara tierna amarilla suave con corazón
-     colores: #FFD93D cara, #FF6B6B corazón, mejillas #FFAA8A
-  ══════════════════════════════════════════════════════ */
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     ME IMPORTA â€” cara tierna amarilla suave con corazÃ³n
+     colores: #FFD93D cara, #FF6B6B corazÃ³n, mejillas #FFAA8A
+  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
   care: ({ size = 22 }) => (
     <svg width={size} height={size} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -167,7 +168,7 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
       {/* mejillas dulces */}
       <ellipse cx="9" cy="23" rx="3.5" ry="2" fill="#FFB347" opacity="0.38"/>
       <ellipse cx="27" cy="23" rx="3.5" ry="2" fill="#FFB347" opacity="0.38"/>
-      {/* ojo izquierdo — con mirada cálida */}
+      {/* ojo izquierdo â€” con mirada cÃ¡lida */}
       <g className="care-eye-l">
         <ellipse cx="13" cy="19.5" rx="2.5" ry="2.8" fill="#fff"/>
         <ellipse cx="13" cy="18.8" rx="1.4" ry="1.6" fill="#3E2000"/>
@@ -185,7 +186,7 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
       <g className="care-smile">
         <path d="M12 25.5 Q18 30 24 25.5" stroke="#C47A00" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
       </g>
-      {/* corazón flotante bonito */}
+      {/* corazÃ³n flotante bonito */}
       <g className="care-heart">
         <path d="M18 13 C18 13 12.5 9 12.5 5.8 a3.2 3.2 0 0 1 5.5-.5 a3.2 3.2 0 0 1 5.5.5 C23.5 9 18 13 18 13Z" fill="url(#care-heart-g)"/>
         <ellipse cx="15.5" cy="5.8" rx="1.2" ry="0.7" fill="#fff" opacity="0.5" transform="rotate(-25 15.5 5.8)"/>
@@ -203,10 +204,10 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
     </svg>
   ),
 
-  /* ══════════════════════════════════════════════════════
-     ME DIVIERTE — cara riendo a carcajadas, ojos cerrados
-     colores: #FFD93D cara, ojos en arco, boca naranja cálido
-  ══════════════════════════════════════════════════════ */
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     ME DIVIERTE â€” cara riendo a carcajadas, ojos cerrados
+     colores: #FFD93D cara, ojos en arco, boca naranja cÃ¡lido
+  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
   haha: ({ size = 22 }) => (
     <svg width={size} height={size} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -221,33 +222,33 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
       </defs>
       {/* toda la cabeza se balancea en hover */}
       <g className="haha-head">
-        {/* cara redonda cálida */}
+        {/* cara redonda cÃ¡lida */}
         <circle cx="18" cy="18" r="15" fill="url(#haha-face-g)"/>
         <ellipse cx="13" cy="11" rx="5" ry="3" fill="#fff" opacity="0.15"/>
         {/* mejillas sonrojadas suaves */}
         <ellipse cx="7.5" cy="21" rx="4" ry="2.2" fill="#FF9060" className="haha-cheek" opacity="0.42"/>
         <ellipse cx="28.5" cy="21" rx="4" ry="2.2" fill="#FF9060" className="haha-cheek" opacity="0.42"/>
-        {/* ojo izquierdo cerrado — arco feliz */}
+        {/* ojo izquierdo cerrado â€” arco feliz */}
         <g className="haha-eye-l">
           <ellipse cx="12" cy="15" rx="3.5" ry="2.5" fill="#fff" opacity="0.9"/>
           <path d="M9 15.8 Q12 12.5 15 15.8" stroke="#3E2000" strokeWidth="2" strokeLinecap="round" fill="none"/>
         </g>
-        {/* ojo derecho cerrado — arco feliz */}
+        {/* ojo derecho cerrado â€” arco feliz */}
         <g className="haha-eye-r">
           <ellipse cx="24" cy="15" rx="3.5" ry="2.5" fill="#fff" opacity="0.9"/>
           <path d="M21 15.8 Q24 12.5 27 15.8" stroke="#3E2000" strokeWidth="2" strokeLinecap="round" fill="none"/>
         </g>
-        {/* lágrima izquierda — gota bonita */}
+        {/* lÃ¡grima izquierda â€” gota bonita */}
         <g className="haha-tear-l">
           <path d="M9 18 Q8 16 9 14.5 Q10 16 9 18Z" fill="#7EC8F0"/>
           <ellipse cx="8.7" cy="15.5" rx="0.55" ry="0.4" fill="#fff" opacity="0.7"/>
         </g>
-        {/* lágrima derecha */}
+        {/* lÃ¡grima derecha */}
         <g className="haha-tear-r">
           <path d="M27 18 Q26 16 27 14.5 Q28 16 27 18Z" fill="#7EC8F0"/>
           <ellipse cx="26.7" cy="15.5" rx="0.55" ry="0.4" fill="#fff" opacity="0.7"/>
         </g>
-        {/* boca abierta riendo — bonita y redondeada */}
+        {/* boca abierta riendo â€” bonita y redondeada */}
         <g className="haha-mouth">
           <path d="M8 22 Q18 33 28 22" fill="url(#haha-mouth-g)"/>
           {/* dientes blancos con separaciones suaves */}
@@ -263,10 +264,10 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
     </svg>
   ),
 
-  /* ══════════════════════════════════════════════════════
-     ME ASOMBRA — cara sorprendida dulce, ojos grandes
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     ME ASOMBRA â€” cara sorprendida dulce, ojos grandes
      colores: #FFD93D cara, ojos redondos expresivos, boca en O
-  ══════════════════════════════════════════════════════ */
+  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
   wow: ({ size = 22 }) => (
     <svg width={size} height={size} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -290,7 +291,7 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
       <g className="wow-brow-r">
         <path d="M20 11 Q23.5 9 27 11.5" stroke="#7A4500" strokeWidth="2" strokeLinecap="round" fill="none"/>
       </g>
-      {/* ojo izquierdo — grande expresivo */}
+      {/* ojo izquierdo â€” grande expresivo */}
       <g className="wow-eye-l">
         <ellipse cx="12.5" cy="17" rx="3.8" ry="4" fill="#fff"/>
         <ellipse cx="12.5" cy="17" rx="3.8" ry="4" stroke="#E8A800" strokeWidth="0.6" fill="none"/>
@@ -299,7 +300,7 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
         <circle cx="13.4" cy="16.2" r="0.7" fill="#fff"/>
         <circle cx="11.9" cy="17.8" r="0.35" fill="#fff" opacity="0.5"/>
       </g>
-      {/* ojo derecho — grande expresivo */}
+      {/* ojo derecho â€” grande expresivo */}
       <g className="wow-eye-r">
         <ellipse cx="23.5" cy="17" rx="3.8" ry="4" fill="#fff"/>
         <ellipse cx="23.5" cy="17" rx="3.8" ry="4" stroke="#E8A800" strokeWidth="0.6" fill="none"/>
@@ -314,7 +315,7 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
         <ellipse cx="18" cy="24.2" rx="2.8" ry="1.6" fill="#A0622A" opacity="0.5"/>
         <ellipse cx="18" cy="26" rx="2.2" ry="2.5" fill="#5C3000" opacity="0.4"/>
       </g>
-      {/* gotita de asombro — elegante */}
+      {/* gotita de asombro â€” elegante */}
       <g className="wow-sweat">
         <path d="M30 9 Q29.3 7 30 5.5 Q30.7 7 30 9Z" fill="#7EC8F0"/>
         <ellipse cx="29.7" cy="6.8" rx="0.4" ry="0.3" fill="#fff" opacity="0.7"/>
@@ -322,10 +323,10 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
     </svg>
   ),
 
-  /* ══════════════════════════════════════════════════════
-     ME ENTRISTECE — azul suave, cejas caídas, lágrimas
-     colores: #9EC4DC cara, #B8D8F0 base, lágrimas #7EC8F0
-  ══════════════════════════════════════════════════════ */
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     ME ENTRISTECE â€” azul suave, cejas caÃ­das, lÃ¡grimas
+     colores: #9EC4DC cara, #B8D8F0 base, lÃ¡grimas #7EC8F0
+  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
   sad: ({ size = 22 }) => (
     <svg width={size} height={size} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -342,11 +343,11 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
       <g className="sad-face">
         <circle cx="18" cy="19" r="14" fill="url(#sad-face-g)"/>
         <ellipse cx="13" cy="12" rx="5" ry="2.5" fill="#fff" opacity="0.2"/>
-        {/* mejillas pálidas */}
+        {/* mejillas pÃ¡lidas */}
         <ellipse cx="9" cy="24" rx="3.5" ry="1.8" fill="#6B9FD4" opacity="0.28"/>
         <ellipse cx="27" cy="24" rx="3.5" ry="1.8" fill="#6B9FD4" opacity="0.28"/>
       </g>
-      {/* ceja izquierda — se dobla triste */}
+      {/* ceja izquierda â€” se dobla triste */}
       <g className="sad-brow-l">
         <path d="M8 12 Q11.5 15 15 13" stroke="#2E608A" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
       </g>
@@ -354,7 +355,7 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
       <g className="sad-brow-r">
         <path d="M21 13 Q24.5 15 28 12" stroke="#2E608A" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
       </g>
-      {/* ojo izquierdo — suave con lagrimita acumulada */}
+      {/* ojo izquierdo â€” suave con lagrimita acumulada */}
       <g className="sad-eye-l">
         <ellipse cx="12" cy="17.5" rx="3" ry="3" fill="#fff"/>
         <ellipse cx="12" cy="17.8" rx="1.8" ry="1.8" fill="url(#sad-eye-g)"/>
@@ -375,12 +376,12 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
       <g className="sad-mouth">
         <path d="M10 26 Q18 21.5 26 26" stroke="#2E608A" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
       </g>
-      {/* lágrima izquierda — gota bonita */}
+      {/* lÃ¡grima izquierda â€” gota bonita */}
       <g className="sad-tear-l">
         <path d="M12 21.5 Q11 19 12 17 Q13 19 12 21.5Z" fill="#7EC8F0"/>
         <ellipse cx="11.7" cy="18.5" rx="0.5" ry="0.4" fill="#fff" opacity="0.65"/>
       </g>
-      {/* lágrima derecha */}
+      {/* lÃ¡grima derecha */}
       <g className="sad-tear-r">
         <path d="M24 21.5 Q23 19 24 17 Q25 19 24 21.5Z" fill="#7EC8F0"/>
         <ellipse cx="23.7" cy="18.5" rx="0.5" ry="0.4" fill="#fff" opacity="0.65"/>
@@ -388,10 +389,10 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
     </svg>
   ),
 
-  /* ══════════════════════════════════════════════════════
-     ME ENOJA — rojo cálido (NO terrorífico), cejas en V
-     colores: #FF6B47 cara, #FF4500 más intenso, expresión clara
-  ══════════════════════════════════════════════════════ */
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+     ME ENOJA â€” rojo cÃ¡lido (NO terrorÃ­fico), cejas en V
+     colores: #FF6B47 cara, #FF4500 mÃ¡s intenso, expresiÃ³n clara
+  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
   angry: ({ size = 22 }) => (
     <svg width={size} height={size} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -404,21 +405,21 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
           <stop offset="100%" stopColor="#3A0000"/>
         </radialGradient>
       </defs>
-      {/* glow naranja suave — pulsa */}
+      {/* glow naranja suave â€” pulsa */}
       <circle cx="18" cy="19" r="15.5" fill="#FF8C5A" className="angry-glow" opacity="0.2"/>
-      {/* cara roja cálida */}
+      {/* cara roja cÃ¡lida */}
       <g className="angry-face">
         <circle cx="18" cy="19" r="13.5" fill="url(#angry-face-g)"/>
         <ellipse cx="13" cy="12" rx="5" ry="2.5" fill="#fff" opacity="0.12"/>
-        {/* mejillas más intensas */}
+        {/* mejillas mÃ¡s intensas */}
         <ellipse cx="8.5" cy="23" rx="3.8" ry="2" fill="#C43000" opacity="0.35"/>
         <ellipse cx="27.5" cy="23" rx="3.8" ry="2" fill="#C43000" opacity="0.35"/>
       </g>
-      {/* ceja izquierda — en diagonal hacia adentro, expresiva */}
+      {/* ceja izquierda â€” en diagonal hacia adentro, expresiva */}
       <g className="angry-brow-l">
         <path d="M7.5 13 Q11 15.5 14.5 14" stroke="#6B1000" strokeWidth="2.8" strokeLinecap="round" fill="none"/>
       </g>
-      {/* ceja derecha — en diagonal hacia adentro */}
+      {/* ceja derecha â€” en diagonal hacia adentro */}
       <g className="angry-brow-r">
         <path d="M21.5 14 Q25 15.5 28.5 13" stroke="#6B1000" strokeWidth="2.8" strokeLinecap="round" fill="none"/>
       </g>
@@ -428,7 +429,7 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
         <ellipse cx="12" cy="19.3" rx="2" ry="1.8" fill="url(#angry-eye-g)"/>
         <ellipse cx="12" cy="19.3" rx="1.1" ry="1" fill="#1A0000"/>
         <circle cx="12.8" cy="18.6" r="0.5" fill="#fff"/>
-        {/* párpado superior */}
+        {/* pÃ¡rpado superior */}
         <path d="M8.8 17 Q12 15.5 15.2 17" fill="#E84000"/>
       </g>
       {/* ojo derecho entrecerrado */}
@@ -439,13 +440,13 @@ const ReactionIcons: Record<string, (props: { size?: number; color?: string }) =
         <circle cx="24.8" cy="18.6" r="0.5" fill="#fff"/>
         <path d="M20.8 17 Q24 15.5 27.2 17" fill="#E84000"/>
       </g>
-      {/* boca apretada — expresiva pero no horrible */}
+      {/* boca apretada â€” expresiva pero no horrible */}
       <g className="angry-mouth">
         <path d="M10 26.5 Q18 22.5 26 26.5" stroke="#6B1000" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-        {/* pequeños dientes apretados */}
+        {/* pequeÃ±os dientes apretados */}
         <path d="M13 26 Q18 23.5 23 26" fill="#fff" opacity="0.85"/>
       </g>
-      {/* vena pequeña discreta — pulsa */}
+      {/* vena pequeÃ±a discreta â€” pulsa */}
       <g className="angry-vein">
         <path d="M24 9.5 L25.2 8 L26.2 9.5 L27.5 7.5" stroke="#8B2000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
       </g>
@@ -523,7 +524,7 @@ export default function Community() {
           const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
           const d = await r.json();
           const addr = d.address;
-          const label = addr.city || addr.town || addr.village || addr.municipality || addr.county || "Ubicación";
+          const label = addr.city || addr.town || addr.village || addr.municipality || addr.county || "UbicaciÃ³n";
           const country = addr.country || "";
           setLocation(`${label}${country ? ", " + country : ""}`);
         } catch {
@@ -592,10 +593,10 @@ export default function Community() {
       setPreviewImages([]);
       setLocation(null);
       setIsDialogOpen(false);
-      toast({ title: "¡Publicado!", description: "Tu aporte ambiental ha sido compartido con la comunidad." });
+      toast({ title: "Â¡Publicado!", description: "Tu aporte ambiental ha sido compartido con la comunidad." });
     },
     onError: () => {
-      toast({ variant: "destructive", title: "Error", description: "No se pudo publicar. ¿Estás conectado?" });
+      toast({ variant: "destructive", title: "Error", description: "No se pudo publicar. Â¿EstÃ¡s conectado?" });
     },
   });
 
@@ -640,11 +641,11 @@ export default function Community() {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Categoría</FormLabel>
+                      <FormLabel>CategorÃ­a</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecciona una categoría" />
+                            <SelectValue placeholder="Selecciona una categorÃ­a" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -668,7 +669,7 @@ export default function Community() {
                     <FormItem>
                       <FormControl>
                         <Textarea
-                          placeholder="Comparte cómo clasificaste tus residuos, tu proceso de compostaje o tu jornada de limpieza..."
+                          placeholder="Comparte cÃ³mo clasificaste tus residuos, tu proceso de compostaje o tu jornada de limpieza..."
                           className="min-h-[120px]"
                           {...field}
                         />
@@ -743,7 +744,7 @@ export default function Community() {
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                     >
                       {gettingLocation ? <Loader2 className="h-4 w-4 animate-spin text-red-400" /> : <MapPin className="h-4 w-4 text-red-400" />}
-                      Ubicación
+                      UbicaciÃ³n
                     </button>
                   </div>
                   <Button type="submit" disabled={mutation.isPending} size="sm" className="rounded-full gap-2">
@@ -792,8 +793,8 @@ export default function Community() {
                 </CardHeader>
                 <CardContent>
                   {(() => {
-                    const loc = post.content.match(/\n\n📍 (.+)$/);
-                    const text = loc ? post.content.replace(/\n\n📍 .+$/, '') : post.content;
+                    const loc = post.content.match(/\n\nðŸ“ (.+)$/);
+                    const text = loc ? post.content.replace(/\n\nðŸ“ .+$/, '') : post.content;
                     return (
                       <>
                         <p className="whitespace-pre-wrap text-foreground/90 break-words overflow-hidden">{text}</p>
@@ -819,7 +820,7 @@ export default function Community() {
         {sortedPosts.length === 0 && (
           <div className="text-center py-16 text-muted-foreground">
             <Leaf className="h-12 w-12 mx-auto mb-3 opacity-30" />
-            <p>Aún no hay publicaciones. ¡Sé el primero en compartir!</p>
+            <p>AÃºn no hay publicaciones. Â¡SÃ© el primero en compartir!</p>
           </div>
         )}
       </div>
@@ -827,7 +828,7 @@ export default function Community() {
   );
 }
 
-// ─── Image Gallery + Lightbox (Facebook-style) ───────────────────────────────
+// â”€â”€â”€ Image Gallery + Lightbox (Facebook-style) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PostImageGallery({ imageUrl }: { imageUrl: string | null | undefined }) {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
@@ -987,7 +988,7 @@ function PostImageGallery({ imageUrl }: { imageUrl: string | null | undefined })
   );
 }
 
-// ─── Post Menu (Edit/Delete) ──────────────────────────────────────────────────
+// â”€â”€â”€ Post Menu (Edit/Delete) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PostMenu({ post }: { post: any }) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -1022,7 +1023,7 @@ function PostMenu({ post }: { post: any }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.posts.list.path] });
-      toast({ title: "Publicación eliminada" });
+      toast({ title: "PublicaciÃ³n eliminada" });
       setConfirmDelete(false);
     },
     onError: () => toast({ variant: "destructive", title: "Error al eliminar" }),
@@ -1040,7 +1041,7 @@ function PostMenu({ post }: { post: any }) {
       queryClient.invalidateQueries({ queryKey: [api.posts.list.path] });
       setEditing(false);
       setOpen(false);
-      toast({ title: "Publicación editada" });
+      toast({ title: "PublicaciÃ³n editada" });
     },
     onError: () => toast({ variant: "destructive", title: "Error al editar" }),
   });
@@ -1111,11 +1112,11 @@ function PostMenu({ post }: { post: any }) {
         <DialogContent className="sm:max-w-[380px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-500">
-              <Trash2 className="h-5 w-5" /> Eliminar publicación
+              <Trash2 className="h-5 w-5" /> Eliminar publicaciÃ³n
             </DialogTitle>
           </DialogHeader>
           <div className="pt-2 space-y-4">
-            <p className="text-sm text-muted-foreground">¿Seguro que quieres eliminar esta publicación? Esta acción no se puede deshacer y perderás 5 puntos.</p>
+            <p className="text-sm text-muted-foreground">Â¿Seguro que quieres eliminar esta publicaciÃ³n? Esta acciÃ³n no se puede deshacer y perderÃ¡s 5 puntos.</p>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setConfirmDelete(false)}>Cancelar</Button>
               <Button variant="destructive" onClick={() => deletePost.mutate()} disabled={deletePost.isPending}>
@@ -1131,14 +1132,14 @@ function PostMenu({ post }: { post: any }) {
       <Dialog open={editing} onOpenChange={setEditing}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Editar publicación</DialogTitle>
+            <DialogTitle>Editar publicaciÃ³n</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 pt-2">
             <Textarea
               value={editContent}
               onChange={e => setEditContent(e.target.value)}
               className="min-h-[100px]"
-              placeholder="Contenido de la publicación..."
+              placeholder="Contenido de la publicaciÃ³n..."
             />
             {/* Image section */}
             {editImageUrls.length > 0 && (
@@ -1161,7 +1162,7 @@ function PostMenu({ post }: { post: any }) {
               onClick={() => editFileRef.current?.click()}
               disabled={editImageUrls.length >= 10 || editUploading}>
               {editUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
-              {editUploading ? "Subiendo..." : editImageUrls.length > 0 ? `Añadir fotos (${editImageUrls.length}/10)` : "Agregar fotos"}
+              {editUploading ? "Subiendo..." : editImageUrls.length > 0 ? `AÃ±adir fotos (${editImageUrls.length}/10)` : "Agregar fotos"}
             </Button>
             <input ref={editFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleEditFileChange} />
             <div className="flex justify-end gap-2">
@@ -1178,7 +1179,7 @@ function PostMenu({ post }: { post: any }) {
   );
 }
 
-// ─── Comment Menu (Edit/Delete) ───────────────────────────────────────────────
+// â”€â”€â”€ Comment Menu (Edit/Delete) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CommentMenu({ comment, postId }: { comment: any; postId: number }) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -1268,7 +1269,7 @@ function CommentMenu({ comment, postId }: { comment: any; postId: number }) {
             </DialogTitle>
           </DialogHeader>
           <div className="pt-2 space-y-4">
-            <p className="text-sm text-muted-foreground">¿Seguro que quieres eliminar este comentario? Esta acción no se puede deshacer.</p>
+            <p className="text-sm text-muted-foreground">Â¿Seguro que quieres eliminar este comentario? Esta acciÃ³n no se puede deshacer.</p>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setConfirmDelete(false)}>Cancelar</Button>
               <Button variant="destructive" onClick={() => deleteComment.mutate()} disabled={deleteComment.isPending}>
@@ -1305,7 +1306,7 @@ function CommentMenu({ comment, postId }: { comment: any; postId: number }) {
   );
 }
 
-// ─── Reactions (Facebook-style) ───────────────────────────────────────────────
+// â”€â”€â”€ Reactions (Facebook-style) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PostReactions({ postId }: { postId: number }) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
@@ -1530,153 +1531,36 @@ function PostReactions({ postId }: { postId: number }) {
   );
 }
 
-// ─── Share ────────────────────────────────────────────────────────────────────
-const shareOptions = [
-  {
-    id: "facebook",
-    label: "Facebook",
-    icon: Facebook,
-    color: "#1877F2",
-    bg: "#E7F0FD",
-  },
-  {
-    id: "twitter",
-    label: "X / Twitter",
-    icon: Twitter,
-    color: "#000000",
-    bg: "#E7E7E7",
-  },
-  {
-    id: "whatsapp",
-    label: "WhatsApp",
-    iconEmoji: "💬",
-    color: "#25D366",
-    bg: "#E7FBF0",
-  },
-  {
-    id: "telegram",
-    label: "Telegram",
-    iconEmoji: "✈️",
-    color: "#229ED9",
-    bg: "#E3F4FC",
-  },
-  {
-    id: "copy",
-    label: "Copiar enlace",
-    icon: Link2,
-    color: "#6B7280",
-    bg: "#F3F4F6",
-  },
-];
-
+// --- Share (native cross-platform) ----------------------------------------
 function PostShare({ postId }: { postId: number }) {
-  const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const btnRef = useRef<HTMLButtonElement>(null);
-  const [pos, setPos] = useState({ bottom: 0, right: 0 });
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (!btnRef.current?.contains(target) && !(document.getElementById(`share-portal-${postId}`)?.contains(target))) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
+  const handleShare = async () => {
+    const url = `${window.location.origin}/comunidad/post/${postId}`;
+    const result = await shareContent({
+      title: "EcoGuardian",
+      text: "Mira esta publicacion de la comunidad en EcoGuardian!",
+      url
+    }).catch(() => null);
 
-  const handleOpen = () => {
-    if (btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect();
-      setPos({
-        bottom: window.innerHeight - rect.top + 8,
-        right: Math.max(8, window.innerWidth - rect.right),
-      });
+    if (result === 'clipboard') {
+      toast({ title: "Enlace copiado!", description: "Listo para compartir con tus amigos." });
     }
-    setOpen(v => !v);
   };
-
-  const handleShare = (optionId: string) => {
-    if (optionId === "copy") {
-      const fakeUrl = `${window.location.origin}/comunidad/post/${postId}`;
-      navigator.clipboard.writeText(fakeUrl).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-        toast({ title: "¡Enlace copiado!", description: "El enlace fue copiado al portapapeles." });
-      });
-    }
-    setOpen(false);
-  };
-
-  const portal = open ? createPortal(
-    <AnimatePresence>
-      <motion.div
-        id={`share-portal-${postId}`}
-        initial={{ opacity: 0, scale: 0.9, y: 8 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: 8 }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        className="fixed z-[9999] bg-background border border-border rounded-2xl shadow-2xl overflow-hidden"
-        style={{ bottom: pos.bottom, right: pos.right, minWidth: 220 }}
-      >
-        <div className="px-4 pt-3 pb-2 border-b border-border/50">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Compartir publicación</p>
-        </div>
-        <div className="p-2 space-y-0.5">
-          {shareOptions.map((opt, i) => (
-            <motion.button
-              key={opt.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05 }}
-              onClick={() => handleShare(opt.id)}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-muted transition-colors text-left group"
-            >
-              <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 text-base"
-                style={{ backgroundColor: opt.bg, color: opt.color }}>
-                {opt.iconEmoji ? <span className="text-sm">{opt.iconEmoji}</span> : opt.icon ? <opt.icon className="h-4 w-4" /> : null}
-              </div>
-              <span className="text-sm font-medium text-foreground">{opt.label}</span>
-              {opt.id === "copy" && copied && (
-                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="ml-auto">
-                  <Check className="h-4 w-4 text-green-500" />
-                </motion.span>
-              )}
-              {opt.id !== "copy" && (
-                <span className="ml-auto text-[10px] text-muted-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity">Próximamente</span>
-              )}
-            </motion.button>
-          ))}
-        </div>
-        <div className="px-4 pb-3 pt-1">
-          <p className="text-[10px] text-muted-foreground/60 text-center">Los links estarán disponibles pronto</p>
-        </div>
-      </motion.div>
-    </AnimatePresence>,
-    document.body
-  ) : null;
 
   return (
-    <>
-      <motion.button
-        ref={btnRef}
-        whileTap={{ scale: 0.9 }}
-        onClick={handleOpen}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-          ${open ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
-      >
-        <Share2 className="h-4 w-4" />
-        <span>Compartir</span>
-      </motion.button>
-      {portal}
-    </>
+    <motion.button
+      whileTap={{ scale: 0.9 }}
+      onClick={handleShare}
+      className="flex flex-1 items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"
+    >
+      <Share2 className="h-4 w-4" />
+      <span className="hidden xs:inline sm:inline">Compartir</span>
+    </motion.button>
   );
 }
 
-// ─── PostFooter (Facebook-style: reactions summary + action buttons + comments) ──
+// â”€â”€â”€ PostFooter (Facebook-style: reactions summary + action buttons + comments) â”€â”€
 function PostFooter({ post }: { post: any }) {
   const [commentsOpen, setCommentsOpen] = useState(false);
 
@@ -1704,7 +1588,7 @@ function PostFooter({ post }: { post: any }) {
   );
 }
 
-// ─── Reaction counts summary row ─────────────────────────────────────────────
+// â”€â”€â”€ Reaction counts summary row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PostReactionCounts({ postId, onCommentsClick }: { postId: number; onCommentsClick: () => void }) {
   const reactionsUrl = buildUrl(api.posts.reactions.get.path, { id: postId });
   const commentsUrl = buildUrl(api.posts.comments.list.path, { id: postId });
@@ -1762,7 +1646,7 @@ function PostReactionCounts({ postId, onCommentsClick }: { postId: number; onCom
   );
 }
 
-// ─── Comments ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Comments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type CommentSort = "new" | "old" | "relevant";
 
 function PostComments({ postId, open, setOpen }: { postId: number; open: boolean; setOpen: (v: boolean) => void }) {
@@ -1934,7 +1818,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
         </div>
       ) : sortedComments.length === 0 ? (
         <p className="text-xs text-muted-foreground text-center py-2">
-          Sin comentarios aún. ¡Sé el primero!
+          Sin comentarios aÃºn. Â¡SÃ© el primero!
         </p>
       ) : (
         <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
@@ -1967,7 +1851,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
                   )}
                 </div>
                 <div className="text-[10px] text-muted-foreground mt-0.5 ml-2">
-                  {format(new Date(c.createdAt), "d MMM · HH:mm", { locale: es })}
+                  {format(new Date(c.createdAt), "d MMM Â· HH:mm", { locale: es })}
                 </div>
               </div>
             </motion.div>
@@ -2061,7 +1945,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
                         searchGifs(val);
                       }
                     }}
-                    placeholder="🔍 Buscar GIF..."
+                    placeholder="ðŸ” Buscar GIF..."
                     className="flex-1 text-sm px-3 py-1.5 rounded-full border border-border bg-muted focus:outline-none focus:ring-1 focus:ring-primary"
                     autoFocus
                   />
@@ -2079,14 +1963,14 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
                 {!gifSearched && (
                   <div className="flex gap-1 px-2 py-1.5 overflow-x-auto border-b border-border/30 flex-shrink-0" style={{ scrollbarWidth: "none" }}>
                     {[
-                      { id: "trending", label: "🔥 Trending" },
-                      { id: "feliz", label: "😄 Feliz" },
-                      { id: "triste", label: "😢 Triste" },
-                      { id: "gracias", label: "🙏 Gracias" },
-                      { id: "aplausos", label: "👏 Aplausos" },
-                      { id: "amor", label: "❤️ Amor" },
-                      { id: "sorpresa", label: "😱 Sorpresa" },
-                      { id: "baile", label: "💃 Baile" },
+                      { id: "trending", label: "ðŸ”¥ Trending" },
+                      { id: "feliz", label: "ðŸ˜„ Feliz" },
+                      { id: "triste", label: "ðŸ˜¢ Triste" },
+                      { id: "gracias", label: "ðŸ™ Gracias" },
+                      { id: "aplausos", label: "ðŸ‘ Aplausos" },
+                      { id: "amor", label: "â¤ï¸ Amor" },
+                      { id: "sorpresa", label: "ðŸ˜± Sorpresa" },
+                      { id: "baile", label: "ðŸ’ƒ Baile" },
                     ].map((cat) => (
                       <button
                         key={cat.id}
@@ -2131,7 +2015,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
                     </div>
                   ) : (
                     <div className="flex justify-center items-center py-8 text-xs text-muted-foreground">
-                      Selecciona una categoría o busca
+                      Selecciona una categorÃ­a o busca
                     </div>
                   )}
                 </div>
@@ -2151,7 +2035,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
                 ref={commentInputRef}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                placeholder={user ? `Comentar como ${user.name}...` : "Inicia sesión para comentar"}
+                placeholder={user ? `Comentar como ${user.name}...` : "Inicia sesiÃ³n para comentar"}
                 disabled={!user}
                 rows={1}
                 className="flex-1 min-w-0 bg-transparent text-sm resize-none outline-none placeholder:text-muted-foreground min-h-[20px] max-h-[80px] leading-5"

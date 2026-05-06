@@ -32,6 +32,7 @@ const navItems = [
 
 // Quick-access shortcuts shown at the top of the drawer (like Facebook groups)
 const quickAccessItems = [
+  { href: "/cronograma", label: "Basura", icon: Trash2, color: "bg-emerald-500" },
   { href: "/dashboard", label: "Mapa Reportes", icon: MapPin, color: "bg-blue-500" },
   { href: "/leaderboard", label: "Ranking", icon: Trophy, color: "bg-yellow-500" },
   { href: "/marketplace", label: "EcoMarket", icon: ShoppingCart, color: "bg-green-500" },
@@ -287,7 +288,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen flex flex-col bg-background">
 
       {/* ── TOP NAVBAR ───────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-background/80 border-b border-border/50">
+      <header className={`sticky top-0 z-50 w-full backdrop-blur-xl bg-background/80 border-b border-border/50 ${location.startsWith('/reels') ? 'hidden md:block' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-14 gap-3">
 
@@ -493,7 +494,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <MobileSearchModal open={isMobileSearchOpen} onClose={() => setIsMobileSearchOpen(false)} />
 
       {/* ── MOBILE BOTTOM NAV BAR ─────────────────────────────────────────── */}
-      {isLoggedIn && (
+      {isLoggedIn && !location.startsWith('/reels') && (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur-xl border-t border-border/50 flex items-center justify-around px-2 py-1">
 
           {/* Inicio */}
@@ -528,14 +529,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           </Link>
 
-          {/* Chat (Replaces Menú) */}
-          <button
-            className="flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all text-muted-foreground"
-            onClick={() => window.dispatchEvent(new CustomEvent('open-floating-chat'))}
-          >
-            <MessageCircle className="h-6 w-6" />
-            <span className="text-[10px] font-medium">Chat</span>
-          </button>
+          {/* Basura / Cronograma */}
+          <Link href="/cronograma">
+            <div className={`flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all ${location === "/cronograma" ? "text-primary" : "text-muted-foreground"}`}>
+              <Trash2 className="h-6 w-6" />
+              <span className="text-[10px] font-medium">Basura</span>
+            </div>
+          </Link>
 
         </nav>
       )}

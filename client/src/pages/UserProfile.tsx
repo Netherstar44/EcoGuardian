@@ -1,3 +1,4 @@
+import { shareContent } from "@/lib/share";
 import { apiBase } from "@/lib/queryClient";
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -442,11 +443,11 @@ export default function UserProfile() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/users/${userId}`] });
       setIsEditOpen(false);
-      toast({ title: "✅ Perfil actualizado correctamente" });
+      toast({ title: "âœ… Perfil actualizado correctamente" });
       refetch();
     },
     onError: () => {
-      toast({ title: "❌ Error al actualizar perfil", variant: "destructive" });
+      toast({ title: "âŒ Error al actualizar perfil", variant: "destructive" });
     },
   });
 
@@ -454,7 +455,7 @@ export default function UserProfile() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
-      toast({ variant: "destructive", title: "Imagen muy grande", description: "Máximo 10MB permitido." });
+      toast({ variant: "destructive", title: "Imagen muy grande", description: "MÃ¡ximo 10MB permitido." });
       return;
     }
     // Open the cropper with the raw image
@@ -530,7 +531,7 @@ export default function UserProfile() {
                   {profile?.bio && <p className="text-muted-foreground mt-2">{profile.bio}</p>}
                   {profile?.dateOfBirth && (
                     <p className="text-sm text-muted-foreground mt-1">
-                      📅 Nacimiento: {new Date(profile.dateOfBirth).toLocaleDateString()}
+                      ðŸ“… Nacimiento: {new Date(profile.dateOfBirth).toLocaleDateString()}
                     </p>
                   )}
                 </div>
@@ -563,7 +564,16 @@ export default function UserProfile() {
                       <MessageCircle className="h-4 w-4" />
                       Mensaje
                     </Button>
-                    <Button variant="outline" size="icon">
+                    <Button variant="outline" size="icon" onClick={async () => {
+                      const result = await shareContent({
+                        title: `${profile?.name} en EcoGuardian`,
+                        text: `Mira el perfil de ${profile?.name} en EcoGuardian!`,
+                        url: window.location.href
+                      }).catch(() => null);
+                      if (result === 'clipboard') {
+                        toast({ title: "Enlace copiado!", description: "Perfil copiado al portapapeles." });
+                      }
+                    }}>
                       <Share2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -582,7 +592,7 @@ export default function UserProfile() {
                         <DialogTitle>Editar Perfil</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4">
-                        {/* Avatar — click circle to change photo */}
+                        {/* Avatar â€” click circle to change photo */}
                         <div className="flex flex-col items-center gap-2">
                           <div className="relative group cursor-pointer" onClick={() => document.getElementById("avatar-input")?.click()}>
                             <div className="h-24 w-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold overflow-hidden ring-4 ring-primary/20 group-hover:ring-primary/50 transition-all">
@@ -628,14 +638,14 @@ export default function UserProfile() {
 
                         {/* Bio */}
                         <div className="space-y-2">
-                          <Label htmlFor="bio">Biografía</Label>
+                          <Label htmlFor="bio">BiografÃ­a</Label>
                           <Input
                             id="bio"
                             value={editData.bio || ""}
                             onChange={(e) =>
                               setEditData((prev: any) => ({ ...prev, bio: e.target.value }))
                             }
-                            placeholder="Cuéntanos sobre ti..."
+                            placeholder="CuÃ©ntanos sobre ti..."
                             maxLength={160}
                           />
                           <p className="text-xs text-muted-foreground">
@@ -672,9 +682,9 @@ export default function UserProfile() {
                           />
                         </div>
 
-                        {/* País */}
+                        {/* PaÃ­s */}
                         <div className="space-y-2">
-                          <Label htmlFor="country">País</Label>
+                          <Label htmlFor="country">PaÃ­s</Label>
                           <Input
                             id="country"
                             value={editData.country || ""}
@@ -684,7 +694,7 @@ export default function UserProfile() {
                                 country: e.target.value,
                               }))
                             }
-                            placeholder="Tu país"
+                            placeholder="Tu paÃ­s"
                           />
                         </div>
 
@@ -715,7 +725,7 @@ export default function UserProfile() {
         </Card>
       </motion.div>
 
-      {/* Estadísticas */}
+      {/* EstadÃ­sticas */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6 text-center">
@@ -786,8 +796,8 @@ export default function UserProfile() {
                     </CardHeader>
                     <CardContent>
                       {(() => {
-                        const loc = post.content.match(/\n\n📍 (.+)$/);
-                        const text = loc ? post.content.replace(/\n\n📍 .+$/, '') : post.content;
+                        const loc = post.content.match(/\n\nðŸ“ (.+)$/);
+                        const text = loc ? post.content.replace(/\n\nðŸ“ .+$/, '') : post.content;
                         return (
                           <>
                             <p className="whitespace-pre-wrap text-foreground/90 break-words overflow-hidden">{text}</p>
@@ -812,7 +822,7 @@ export default function UserProfile() {
           ) : (
             <Card>
               <CardContent className="pt-12 pb-12 text-center text-muted-foreground">
-                <p>Este usuario aún no ha publicado nada</p>
+                <p>Este usuario aÃºn no ha publicado nada</p>
               </CardContent>
             </Card>
           )}
@@ -832,7 +842,7 @@ export default function UserProfile() {
                     <CardContent className="pt-6">
                       <div className="flex items-start gap-4">
                         <div className="px-3 py-1 bg-yellow-100 rounded-full text-3xl">
-                          {badge.icon || "🏆"}
+                          {badge.icon || "ðŸ†"}
                         </div>
                         <div className="flex-1">
                           <h3 className="font-bold text-foreground">{badge.badgeName}</h3>
@@ -851,14 +861,14 @@ export default function UserProfile() {
             <Card>
               <CardContent className="pt-12 pb-12 text-center text-muted-foreground">
                 <Award className="h-12 w-12 mx-auto mb-2 opacity-30" />
-                <p>Este usuario aún no ha desbloqueado logros</p>
+                <p>Este usuario aÃºn no ha desbloqueado logros</p>
               </CardContent>
             </Card>
           )}
         </TabsContent>
       </Tabs>
 
-      {/* ── Avatar Cropper modal ─────────────────────────────────────────── */}
+      {/* â”€â”€ Avatar Cropper modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {cropperSrc && createPortal(
         <AvatarCropper
           imageSrc={cropperSrc}
@@ -872,7 +882,7 @@ export default function UserProfile() {
   );
 }
 
-// ─── Shared Post Components (IDENTICAL BEHAVIOR TO Community) ───────────────
+// â”€â”€â”€ Shared Post Components (IDENTICAL BEHAVIOR TO Community) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PostFooter({ post }: { post: any }) {
   const [commentsOpen, setCommentsOpen] = useState(false);
@@ -1394,7 +1404,7 @@ function CommentMenu({ comment, postId }: { comment: any; postId: number }) {
             </DialogTitle>
           </DialogHeader>
           <div className="pt-2 space-y-4">
-            <p className="text-sm text-muted-foreground">¿Seguro que quieres eliminar este comentario? Esta acción no se puede deshacer.</p>
+            <p className="text-sm text-muted-foreground">Â¿Seguro que quieres eliminar este comentario? Esta acciÃ³n no se puede deshacer.</p>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setConfirmDelete(false)}>Cancelar</Button>
               <Button variant="destructive" onClick={() => deleteComment.mutate()} disabled={deleteComment.isPending}>
@@ -1432,119 +1442,34 @@ function CommentMenu({ comment, postId }: { comment: any; postId: number }) {
 }
 
 function PostShare({ postId }: { postId: number }) {
-  const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const btnRef = useRef<HTMLButtonElement>(null);
-  const [pos, setPos] = useState({ bottom: 0, right: 0 });
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (!btnRef.current?.contains(target) && !(document.getElementById(`share-portal-${postId}`)?.contains(target))) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
+  const handleShare = async () => {
+    const url = `${window.location.origin}/comunidad/post/${postId}`;
+    const result = await shareContent({
+      title: "EcoGuardian",
+      text: "Mira esta publicacion de la comunidad en EcoGuardian!",
+      url
+    }).catch(() => null);
 
-  const handleOpen = () => {
-    if (btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect();
-      setPos({
-        bottom: window.innerHeight - rect.top + 8,
-        right: Math.max(8, window.innerWidth - rect.right),
-      });
+    if (result === 'clipboard') {
+      toast({ title: "Enlace copiado!", description: "Listo para compartir." });
     }
-    setOpen(v => !v);
   };
-
-  const handleShare = (optionId: string) => {
-    if (optionId === "copy") {
-      const fakeUrl = `${window.location.origin}/comunidad/post/${postId}`;
-      navigator.clipboard.writeText(fakeUrl).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-        toast({ title: "¡Enlace copiado!", description: "El enlace fue copiado al portapapeles." });
-      });
-    }
-    setOpen(false);
-  };
-
-  const portal = open ? createPortal(
-    <AnimatePresence>
-      <motion.div
-        id={`share-portal-${postId}`}
-        initial={{ opacity: 0, scale: 0.9, y: 8 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: 8 }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        className="fixed z-[9999] bg-background border border-border rounded-2xl shadow-2xl overflow-hidden"
-        style={{ bottom: pos.bottom, right: pos.right, minWidth: 220 }}
-      >
-        <div className="px-4 pt-3 pb-2 border-b border-border/50">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Compartir publicación</p>
-        </div>
-        <div className="p-2 space-y-0.5">
-          {[
-            { id: "facebook", label: "Facebook", icon: Facebook, color: "#1877F2", bg: "#E7F0FD" },
-            { id: "twitter", label: "X / Twitter", icon: Twitter, color: "#000000", bg: "#E7E7E7" },
-            { id: "whatsapp", label: "WhatsApp", iconEmoji: "💬", color: "#25D366", bg: "#E7FBF0" },
-            { id: "telegram", label: "Telegram", iconEmoji: "✈️", color: "#229ED9", bg: "#E3F4FC" },
-            { id: "copy", label: "Copiar enlace", icon: Link2, color: "#6B7280", bg: "#F3F4F6" },
-          ].map((opt: any, i: number) => (
-            <motion.button
-              key={opt.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05 }}
-              onClick={() => handleShare(opt.id)}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-muted transition-colors text-left group"
-            >
-              <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 text-base"
-                style={{ backgroundColor: opt.bg, color: opt.color }}>
-                {opt.iconEmoji ? <span className="text-sm">{opt.iconEmoji}</span> : opt.icon ? <opt.icon className="h-4 w-4" /> : null}
-              </div>
-              <span className="text-sm font-medium text-foreground">{opt.label}</span>
-              {opt.id === "copy" && copied && (
-                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="ml-auto">
-                  <Check className="h-4 w-4 text-green-500" />
-                </motion.span>
-              )}
-              {opt.id !== "copy" && (
-                <span className="ml-auto text-[10px] text-muted-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity">Próximamente</span>
-              )}
-            </motion.button>
-          ))}
-        </div>
-        <div className="px-4 pb-3 pt-1">
-          <p className="text-[10px] text-muted-foreground/60 text-center">Los links estarán disponibles pronto</p>
-        </div>
-      </motion.div>
-    </AnimatePresence>,
-    document.body
-  ) : null;
 
   return (
-    <>
-      <motion.button
-        ref={btnRef}
-        whileTap={{ scale: 0.9 }}
-        onClick={handleOpen}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-          ${open ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
-      >
-        <Share2 className="h-4 w-4" />
-        <span>Compartir</span>
-      </motion.button>
-      {portal}
-    </>
+    <motion.button
+      whileTap={{ scale: 0.9 }}
+      onClick={handleShare}
+      className="flex flex-1 items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"
+    >
+      <Share2 className="h-4 w-4" />
+      <span className="hidden xs:inline sm:inline">Compartir</span>
+    </motion.button>
   );
 }
 
-// ─── Image Gallery + Lightbox (same as Community) ───────────────────────────
+// â”€â”€â”€ Image Gallery + Lightbox (same as Community) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PostImageGallery({ imageUrl }: { imageUrl: string | null | undefined }) {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
@@ -1691,7 +1616,7 @@ function PostImageGallery({ imageUrl }: { imageUrl: string | null | undefined })
   );
 }
 
-// ─── Image Upload Helper ─────────────────────────────────────────────────────
+// â”€â”€â”€ Image Upload Helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function uploadImageFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -1721,7 +1646,7 @@ async function uploadImageFile(file: File): Promise<string> {
   });
 }
 
-// ─── Post Menu (Edit/Delete) - already matches Community ────────────────────
+// â”€â”€â”€ Post Menu (Edit/Delete) - already matches Community â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PostMenu({ post }: { post: any }) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -1753,7 +1678,7 @@ function PostMenu({ post }: { post: any }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.posts.list.path] });
-      toast({ title: "Publicación eliminada" });
+      toast({ title: "PublicaciÃ³n eliminada" });
       setConfirmDelete(false);
     },
     onError: () => toast({ variant: "destructive", title: "Error al eliminar" }),
@@ -1770,7 +1695,7 @@ function PostMenu({ post }: { post: any }) {
       queryClient.invalidateQueries({ queryKey: [api.posts.list.path] });
       setEditing(false);
       setOpen(false);
-      toast({ title: "Publicación editada" });
+      toast({ title: "PublicaciÃ³n editada" });
     },
     onError: () => toast({ variant: "destructive", title: "Error al editar" }),
   });
@@ -1840,11 +1765,11 @@ function PostMenu({ post }: { post: any }) {
         <DialogContent className="sm:max-w-[380px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-500">
-              <Trash2 className="h-5 w-5" /> Eliminar publicación
+              <Trash2 className="h-5 w-5" /> Eliminar publicaciÃ³n
             </DialogTitle>
           </DialogHeader>
           <div className="pt-2 space-y-4">
-            <p className="text-sm text-muted-foreground">¿Seguro que quieres eliminar esta publicación? Esta acción no se puede deshacer y perderás 5 puntos.</p>
+            <p className="text-sm text-muted-foreground">Â¿Seguro que quieres eliminar esta publicaciÃ³n? Esta acciÃ³n no se puede deshacer y perderÃ¡s 5 puntos.</p>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setConfirmDelete(false)}>Cancelar</Button>
               <Button variant="destructive" onClick={() => deletePost.mutate()} disabled={deletePost.isPending}>
@@ -1859,14 +1784,14 @@ function PostMenu({ post }: { post: any }) {
       <Dialog open={editing} onOpenChange={setEditing}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Editar publicación</DialogTitle>
+            <DialogTitle>Editar publicaciÃ³n</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 pt-2">
             <Textarea
               value={editContent}
               onChange={e => setEditContent(e.target.value)}
               className="min-h-[100px]"
-              placeholder="Contenido de la publicación..."
+              placeholder="Contenido de la publicaciÃ³n..."
             />
             {editImageUrls.length > 0 && (
               <div className={`grid gap-1 rounded-lg overflow-hidden border ${editImageUrls.length === 1 ? "grid-cols-1" : editImageUrls.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
@@ -1888,7 +1813,7 @@ function PostMenu({ post }: { post: any }) {
               onClick={() => editFileRef.current?.click()}
               disabled={editImageUrls.length >= 10 || editUploading}>
               {editUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
-              {editUploading ? "Subiendo..." : editImageUrls.length > 0 ? `Añadir fotos (${editImageUrls.length}/10)` : "Agregar fotos"}
+              {editUploading ? "Subiendo..." : editImageUrls.length > 0 ? `AÃ±adir fotos (${editImageUrls.length}/10)` : "Agregar fotos"}
             </Button>
             <input ref={editFileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleEditFileChange} />
             <div className="flex justify-end gap-2">

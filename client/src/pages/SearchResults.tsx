@@ -1,3 +1,4 @@
+import { shareContent } from "@/lib/share";
 import { apiBase } from "@/lib/queryClient";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
@@ -24,7 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-// ─── Reaction facial animation styles ─────────────────────────────────────────
+// â”€â”€â”€ Reaction facial animation styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const reactionAnimStyles = `
   @keyframes rxn-like-thumb { 0%,100%{transform:rotate(0deg) translateY(0)} 25%{transform:rotate(-18deg) translateY(-1px)} 55%{transform:rotate(12deg) translateY(1px)} 75%{transform:rotate(-8deg) translateY(0)} }
   .rxn-hover-like:hover svg { animation: rxn-like-thumb 0.7s cubic-bezier(.36,.07,.19,.97) infinite; transform-origin: bottom center; }
@@ -162,7 +163,7 @@ export default function SearchResults() {
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Resultados de búsqueda</h1>
+          <h1 className="text-3xl font-bold mb-2">Resultados de bÃºsqueda</h1>
           <p className="text-muted-foreground">
             {debouncedQuery && `Buscando: "${debouncedQuery}"`}
           </p>
@@ -176,7 +177,7 @@ export default function SearchResults() {
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Buscar en EcoGuardián..."
+              placeholder="Buscar en EcoGuardiÃ¡n..."
               className="flex-1 bg-transparent outline-none"
             />
           </div>
@@ -262,10 +263,10 @@ export default function SearchResults() {
                             </div>
                             <h3 className="font-bold text-lg">{user.name}</h3>
                             <p className="text-sm text-muted-foreground mb-1">
-                              {user.city || user.country || "Sin ubicación"}
+                              {user.city || user.country || "Sin ubicaciÃ³n"}
                             </p>
                             <p className="text-xs text-yellow-600 font-bold mb-4">
-                              {user.points} 🌱 eco-puntos
+                              {user.points} ðŸŒ± eco-puntos
                             </p>
                             <Button className="w-full">
                               <UserPlus className="h-4 w-4 mr-2" />
@@ -321,8 +322,8 @@ export default function SearchResults() {
                         </CardHeader>
                         <CardContent>
                           {(() => {
-                            const loc = post.content?.match(/\n\n📍 (.+)$/);
-                            const text = loc ? post.content.replace(/\n\n📍 .+$/, '') : post.content;
+                            const loc = post.content?.match(/\n\nðŸ“ (.+)$/);
+                            const text = loc ? post.content.replace(/\n\nðŸ“ .+$/, '') : post.content;
                             return (
                               <>
                                 <p className="whitespace-pre-wrap text-foreground/90 break-words overflow-hidden">{text}</p>
@@ -353,7 +354,7 @@ export default function SearchResults() {
   );
 }
 
-// ─── Image Gallery + Lightbox (Facebook-style) ───────────────────────────────
+// â”€â”€â”€ Image Gallery + Lightbox (Facebook-style) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PostImageGallery({ imageUrl }: { imageUrl: string | null | undefined }) {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
@@ -513,7 +514,7 @@ function PostImageGallery({ imageUrl }: { imageUrl: string | null | undefined })
   );
 }
 
-// ─── Post Footer with reactions and comments ──────────────────────────────────
+// â”€â”€â”€ Post Footer with reactions and comments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PostFooter({ post }: { post: any }) {
   const [commentsOpen, setCommentsOpen] = useState(false);
 
@@ -541,7 +542,7 @@ function PostFooter({ post }: { post: any }) {
   );
 }
 
-// ─── Reaction counts summary row ─────────────────────────────────────────────
+// â”€â”€â”€ Reaction counts summary row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PostReactionCounts({ postId, onCommentsClick }: { postId: number; onCommentsClick: () => void }) {
   const reactionsUrl = buildUrl(api.posts.reactions.get.path, { id: postId });
   const commentsUrl = buildUrl(api.posts.comments.list.path, { id: postId });
@@ -599,7 +600,7 @@ function PostReactionCounts({ postId, onCommentsClick }: { postId: number; onCom
   );
 }
 
-// ─── Reactions (Facebook-style) ───────────────────────────────────────────────
+// â”€â”€â”€ Reactions (Facebook-style) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PostReactions({ postId }: { postId: number }) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
@@ -798,120 +799,36 @@ function PostReactions({ postId }: { postId: number }) {
   );
 }
 
-// ─── Share ────────────────────────────────────────────────────────────────────
-const shareOptions = [
-  { id: "facebook", label: "Facebook", icon: Facebook, color: "#1877F2", bg: "#E7F0FD" },
-  { id: "twitter",  label: "X / Twitter", icon: Twitter, color: "#000000", bg: "#E7E7E7" },
-  { id: "whatsapp", label: "WhatsApp", iconEmoji: "💬", color: "#25D366", bg: "#E7FBF0" },
-  { id: "telegram", label: "Telegram", iconEmoji: "✈️", color: "#229ED9", bg: "#E3F4FC" },
-  { id: "copy",     label: "Copiar enlace", icon: Link2, color: "#6B7280", bg: "#F3F4F6" },
-];
-
+// --- Share (native cross-platform) ----------------------------------------
 function PostShare({ postId }: { postId: number }) {
-  const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const btnRef = useRef<HTMLButtonElement>(null);
-  const [pos, setPos] = useState({ bottom: 0, right: 0 });
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (!btnRef.current?.contains(target) && !(document.getElementById(`share-portal-${postId}`)?.contains(target))) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
+  const handleShare = async () => {
+    const url = `${window.location.origin}/comunidad/post/${postId}`;
+    const result = await shareContent({
+      title: "EcoGuardian",
+      text: "Mira esta publicacion de la comunidad en EcoGuardian!",
+      url
+    }).catch(() => null);
 
-  const handleOpen = () => {
-    if (btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect();
-      setPos({ bottom: window.innerHeight - rect.top + 8, right: Math.max(8, window.innerWidth - rect.right) });
+    if (result === 'clipboard') {
+      toast({ title: "Enlace copiado!", description: "Listo para compartir." });
     }
-    setOpen(v => !v);
   };
-
-  const handleShare = (optionId: string) => {
-    if (optionId === "copy") {
-      const fakeUrl = `${window.location.origin}/comunidad/post/${postId}`;
-      navigator.clipboard.writeText(fakeUrl).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-        toast({ title: "¡Enlace copiado!", description: "El enlace fue copiado al portapapeles." });
-      });
-    }
-    setOpen(false);
-  };
-
-  const portal = open ? createPortal(
-    <AnimatePresence>
-      <motion.div
-        id={`share-portal-${postId}`}
-        initial={{ opacity: 0, scale: 0.9, y: 8 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: 8 }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        className="fixed z-[9999] bg-background border border-border rounded-2xl shadow-2xl overflow-hidden"
-        style={{ bottom: pos.bottom, right: pos.right, minWidth: 220 }}
-      >
-        <div className="px-4 pt-3 pb-2 border-b border-border/50">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Compartir publicación</p>
-        </div>
-        <div className="p-2 space-y-0.5">
-          {shareOptions.map((opt, i) => (
-            <motion.button
-              key={opt.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05 }}
-              onClick={() => handleShare(opt.id)}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-muted transition-colors text-left group"
-            >
-              <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 text-base"
-                style={{ backgroundColor: opt.bg, color: opt.color }}>
-                {"iconEmoji" in opt && opt.iconEmoji ? <span className="text-sm">{opt.iconEmoji}</span> : opt.icon ? <opt.icon className="h-4 w-4" /> : null}
-              </div>
-              <span className="text-sm font-medium text-foreground">{opt.label}</span>
-              {opt.id === "copy" && copied && (
-                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="ml-auto">
-                  <Check className="h-4 w-4 text-green-500" />
-                </motion.span>
-              )}
-              {opt.id !== "copy" && (
-                <span className="ml-auto text-[10px] text-muted-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity">Próximamente</span>
-              )}
-            </motion.button>
-          ))}
-        </div>
-        <div className="px-4 pb-3 pt-1">
-          <p className="text-[10px] text-muted-foreground/60 text-center">Los links estarán disponibles pronto</p>
-        </div>
-      </motion.div>
-    </AnimatePresence>,
-    document.body
-  ) : null;
 
   return (
-    <>
-      <motion.button
-        ref={btnRef}
-        whileTap={{ scale: 0.9 }}
-        onClick={handleOpen}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-          ${open ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
-      >
-        <Share2 className="h-4 w-4" />
-        <span>Compartir</span>
-      </motion.button>
-      {portal}
-    </>
+    <motion.button
+      whileTap={{ scale: 0.9 }}
+      onClick={handleShare}
+      className="flex flex-1 items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"
+    >
+      <Share2 className="h-4 w-4" />
+      <span className="hidden xs:inline sm:inline">Compartir</span>
+    </motion.button>
   );
 }
 
-// ─── Comments ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Comments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type CommentSort = "new" | "old" | "relevant";
 
 function PostComments({ postId, open, setOpen }: { postId: number; open: boolean; setOpen: (v: boolean) => void }) {
@@ -1114,7 +1031,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
           ref={commentInputRef}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder={user ? `Comentar como ${user.name}...` : "Inicia sesión para comentar"}
+          placeholder={user ? `Comentar como ${user.name}...` : "Inicia sesiÃ³n para comentar"}
           disabled={!user}
           rows={1}
           className="flex-1 min-w-0 bg-transparent text-sm resize-none outline-none placeholder:text-muted-foreground min-h-[20px] max-h-[80px] leading-5"
@@ -1226,7 +1143,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
                 ))}
               </div>
             ) : (
-              <div className="flex justify-center items-center py-8 text-xs text-muted-foreground">Selecciona una categoría o busca</div>
+              <div className="flex justify-center items-center py-8 text-xs text-muted-foreground">Selecciona una categorÃ­a o busca</div>
             )}
           </div>
           <div className="px-3 py-1.5 border-t border-border/30 flex justify-end">
@@ -1241,7 +1158,7 @@ function PostComments({ postId, open, setOpen }: { postId: number; open: boolean
   );
 }
 
-// ─── Custom SVG reaction icons (animated on hover) ────────────────────────────
+// â”€â”€â”€ Custom SVG reaction icons (animated on hover) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const ReactionIcons: Record<string, (props: { size?: number; color?: string }) => JSX.Element> = {
   like: ({ size = 22, color = "#1877F2" }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import EmojiPicker from "emoji-picker-react";
+import { shareContent } from "@/lib/share";
 
 const CATEGORIES = ["limpieza", "reciclaje", "compostaje", "energía", "agua", "biodiversidad", "otro"];
 
@@ -182,6 +183,20 @@ export default function Reels() {
     if (currentReelIndex > 0) {
       setCurrentReelIndex(currentReelIndex - 1);
       setShowComments(false);
+    }
+  };
+
+  const handleShareReel = async () => {
+    if (!currentReel) return;
+    const url = `${window.location.origin}/reels/${currentReel.id}`;
+    const result = await shareContent({
+      title: currentReel.title || "EcoReel",
+      text: `¡Mira este Reel ecológico de ${currentReel.author?.name || 'la comunidad'} en EcoGuardián!`,
+      url
+    }).catch(() => null);
+
+    if (result === 'clipboard') {
+      toast({ title: "Enlace copiado", description: "El enlace se ha copiado al portapapeles." });
     }
   };
 
@@ -393,6 +408,7 @@ export default function Reels() {
 
                   <motion.button
                     whileTap={{ scale: 0.9 }}
+                    onClick={handleShareReel}
                     className="flex flex-col items-center gap-1"
                   >
                     <Share2 className="h-7 w-7 text-white drop-shadow" />
