@@ -529,11 +529,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           </Link>
 
-          {/* Basura / Cronograma */}
-          <Link href="/cronograma">
-            <div className={`flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all ${location === "/cronograma" ? "text-primary" : "text-muted-foreground"}`}>
-              <Trash2 className="h-6 w-6" />
-              <span className="text-[10px] font-medium">Basura</span>
+          {/* Chatbot Gaia */}
+          <Link href="/chatbot">
+            <div className={`flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all ${location === "/chatbot" ? "text-primary" : "text-muted-foreground"}`}>
+              <MessageCircle className="h-6 w-6" />
+              <span className="text-[10px] font-medium">Gaia</span>
             </div>
           </Link>
 
