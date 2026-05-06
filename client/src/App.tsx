@@ -31,6 +31,7 @@ import Weather from "@/pages/Weather";
 import Messages from "@/pages/Messages";
 import Cronograma from "@/pages/Cronograma";
 import Chatbot from "@/pages/Chatbot";
+import DownloadApp from "@/pages/DownloadApp";
 
 /**
  * Guard for routes that require authentication.
@@ -72,6 +73,7 @@ function Router() {
         <Route path="/leaderboard" component={Leaderboard} />
         <Route path="/education" component={Education} />
         <Route path="/weather" component={Weather} />
+        <Route path="/download" component={DownloadApp} />
 
         {/* Protected routes */}
         <Route path="/create-report" component={() => <ProtectedRoute component={CreateReport} />} />
