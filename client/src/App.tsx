@@ -29,6 +29,7 @@ import SearchResults from "@/pages/SearchResults";
 import Weather from "@/pages/Weather";
 // @ts-ignore - path alias sometimes confuses ts in tooling
 import Messages from "@/pages/Messages";
+import Cronograma from "@/pages/Cronograma";
 
 /**
  * Guard for routes that require authentication.
@@ -82,6 +83,7 @@ function Router() {
         <Route path="/minigames" component={() => <ProtectedRoute component={Minigames} />} />
         <Route path="/user/:id" component={() => <ProtectedRoute component={UserProfile} />} />
         <Route path="/messages" component={() => <ProtectedRoute component={Messages} />} />
+        <Route path="/cronograma" component={() => <ProtectedRoute component={Cronograma} />} />
 
         <Route component={NotFound} />
       </Switch>

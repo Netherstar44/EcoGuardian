@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import {
   Home, MapPin, Trophy, BookOpen, Cloud,
-  ShoppingCart, Film, Zap, UserPlus, CloudSun, PlusCircle
+  ShoppingCart, Film, Zap, UserPlus, CloudSun, PlusCircle, Trash2
 } from "lucide-react";
 
 const navItems = [
@@ -19,6 +19,7 @@ const secondaryNav = [
   { href: "/reels", label: "Reels", icon: Film },
   { href: "/minigames", label: "Juegos", icon: Zap },
   { href: "/education", label: "Aprende", icon: BookOpen },
+  { href: "/cronograma", label: "Cronograma de Basura", icon: Trash2 },
 ];
 
 export function LeftSidebar() {

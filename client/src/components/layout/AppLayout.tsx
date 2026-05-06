@@ -7,7 +7,7 @@ import {
   ShoppingCart, Film, Zap, Bell, User, UserPlus,
   CloudSun, Home, PlusCircle, MessageCircle, Check,
   ChevronDown, ChevronUp, Settings, HelpCircle, Briefcase,
-  Clock, Bookmark, Rss, Search, Moon, Sun, Mail
+  Clock, Bookmark, Rss, Search, Moon, Sun, Mail, Trash2
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -45,6 +45,7 @@ const gridMenuItems = [
   { href: "/weather",     label: "Clima",     icon: CloudSun,    color: "bg-sky-100 text-sky-700" },
   { href: "/carbon",      label: "Carbono",   icon: Cloud,       color: "bg-slate-100 text-slate-700" },
   { href: "/minigames",   label: "Juegos",    icon: Zap,         color: "bg-purple-100 text-purple-700" },
+  { href: "/cronograma",  label: "Basura",    icon: Trash2,      color: "bg-emerald-100 text-emerald-700" },
   { href: "/education",   label: "Aprende",   icon: BookOpen,    color: "bg-teal-100 text-teal-700" },
 ];
 
