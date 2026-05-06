@@ -888,9 +888,6 @@ export async function registerRoutes(
   app.get('/api/marketplace/seed', async (req, res) => {
     try {
       const existing = await storage.getMarketplaceProducts();
-      if (existing.length > 0) {
-        return res.json({ message: "Marketplace is already seeded", count: existing.length });
-      }
 
       // get first user
       const allUsers = await db.select().from(users).limit(1);
