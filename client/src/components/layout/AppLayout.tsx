@@ -7,7 +7,8 @@ import {
   ShoppingCart, Film, Zap, Bell, User, UserPlus,
   CloudSun, Home, PlusCircle, MessageCircle, Check,
   ChevronDown, ChevronUp, Settings, HelpCircle, Briefcase,
-  Clock, Bookmark, Rss, Search, Moon, Sun, Mail, Trash2
+  Clock, Bookmark, Rss, Search, Moon, Sun, Mail, Trash2,
+  Smartphone, Download
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
@@ -175,7 +176,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [showMoreGrid, setShowMoreGrid] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [isMobileBrowser, setIsMobileBrowser] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
+
+  // Detect mobile browser for download prompt
+  useEffect(() => {
+    const ua = navigator.userAgent;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    // Only show if NOT running inside Capacitor (native app)
+    const isNative = (window as any).Capacitor?.isNative;
+    setIsMobileBrowser(isMobile && !isNative);
+  }, []);
 
   const hideSidebarAndChat = ["/messages", "/reels"].some((p) => location.startsWith(p));
   const isLoggedIn = user != null;
@@ -285,9 +296,26 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      {/* Mobile Download Banner (Global) */}
+      {isMobileBrowser && !location.startsWith("/download") && (
+        <div className="fixed top-0 left-0 right-0 z-[100] bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between shadow-lg animate-in slide-in-from-top duration-500">
+          <div className="flex items-center gap-3">
+            <Smartphone className="h-5 w-5" />
+            <div className="text-[10px] sm:text-xs">
+              <p className="font-bold">EcoGuardián App</p>
+              <p className="opacity-80">Mejor experiencia en nuestra app</p>
+            </div>
+          </div>
+          <Link href="/download">
+            <Button size="sm" variant="secondary" className="h-7 px-3 text-[10px] sm:text-xs gap-1 font-bold">
+              <Download className="h-3 w-3" /> Descargar
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {/* ── TOP NAVBAR ───────────────────────────────────────────────────────── */}
-      <header className={`sticky top-0 z-50 w-full backdrop-blur-xl bg-background/80 border-b border-border/50 ${location.startsWith('/reels') ? 'hidden md:block' : ''}`}>
+      <header className={`sticky top-0 z-50 w-full backdrop-blur-xl bg-background/80 border-b border-border/50 ${location.startsWith('/reels') ? 'hidden md:block' : ''} ${isMobileBrowser && !location.startsWith("/download") ? "mt-12" : ""}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-14 gap-3">
 

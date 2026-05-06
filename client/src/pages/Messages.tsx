@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { 
   MessageCircle, ArrowLeft, Send, Loader2, Image as ImageIcon, 
-  Paperclip, Check, CheckCheck, Smile, X, Download, Smartphone
+  Paperclip, Check, CheckCheck, Smile, X
 } from "lucide-react";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { createPortal } from "react-dom";
@@ -158,8 +158,6 @@ export default function Messages() {
   const [friendTyping, setFriendTyping] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [gifPickerPos, setGifPickerPos] = useState({ bottom: 0, left: 0 });
-  const [isMobileBrowser, setIsMobileBrowser] = useState(false);
-  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const selectedFriendRef = useRef<any>(null);
@@ -171,15 +169,6 @@ export default function Messages() {
   useEffect(() => {
     selectedFriendRef.current = selectedFriend;
   }, [selectedFriend]);
-
-  // Detect mobile browser for download prompt
-  useEffect(() => {
-    const ua = navigator.userAgent;
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-    // Only show if NOT running inside Capacitor (native app)
-    const isNative = (window as any).Capacitor?.isNative;
-    setIsMobileBrowser(isMobile && !isNative);
-  }, []);
 
   // ── Data Fetching ──────────────────────────────────────────────────────────
   const { data: friendRecords = [], isLoading: loadingFriends } = useQuery<any[]>({
@@ -375,26 +364,8 @@ export default function Messages() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="flex h-full overflow-hidden bg-background">
-      {/* Mobile Download Banner */}
-      {isMobileBrowser && (
-        <div className="fixed top-0 left-0 right-0 z-[100] bg-primary text-primary-foreground px-4 py-2 flex items-center justify-between shadow-lg animate-in slide-in-from-top duration-500">
-          <div className="flex items-center gap-3">
-            <Smartphone className="h-5 w-5" />
-            <div className="text-xs">
-              <p className="font-bold">EcoGuardian App</p>
-              <p className="opacity-80">Mejor experiencia en nuestra app</p>
-            </div>
-          </div>
-          <Link href="/download">
-            <Button size="sm" variant="secondary" className="h-8 text-xs gap-1">
-              <Download className="h-3 w-3" /> Descargar
-            </Button>
-          </Link>
-        </div>
-      )}
-
       {/* Chat List Sidebar */}
-      <div className={`w-full md:w-80 lg:w-96 border-r border-border/50 ${mobileView === "chat" ? "hidden md:flex" : "flex"} flex-col h-full shrink-0 ${isMobileBrowser ? "pt-12" : ""}`}>
+      <div className={`w-full md:w-80 lg:w-96 border-r border-border/50 ${mobileView === "chat" ? "hidden md:flex" : "flex"} flex-col h-full shrink-0`}>
         <div className="p-4 border-b border-border/50 flex justify-between items-center">
           <h2 className="text-xl font-bold">Chats</h2>
         </div>
@@ -428,7 +399,7 @@ export default function Messages() {
       </div>
 
       {/* Main Chat View */}
-      <div className={`flex-1 flex flex-col h-full ${mobileView === "list" ? "hidden md:flex" : "flex"} ${isMobileBrowser ? "pt-12" : ""}`}>
+      <div className={`flex-1 flex flex-col h-full ${mobileView === "list" ? "hidden md:flex" : "flex"}`}>
         {selectedFriend ? (
           <div className="flex flex-col h-full bg-background/50">
             {/* Chat Header */}
