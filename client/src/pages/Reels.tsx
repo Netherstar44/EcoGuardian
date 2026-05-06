@@ -212,7 +212,7 @@ export default function Reels() {
   }
 
   return (
-    <div className="w-full h-full bg-black text-white flex flex-col absolute inset-0">
+    <div className="w-full bg-black text-white flex flex-col fixed inset-0 z-[100] md:static md:h-[calc(100vh-3.5rem)]">
       <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col relative h-full">
         {currentReel ? (
           <div

@@ -35,7 +35,6 @@ const quickAccessItems = [
   { href: "/cronograma", label: "Basura", icon: Trash2, color: "bg-emerald-500" },
   { href: "/dashboard", label: "Mapa Reportes", icon: MapPin, color: "bg-blue-500" },
   { href: "/leaderboard", label: "Ranking", icon: Trophy, color: "bg-yellow-500" },
-  { href: "/marketplace", label: "EcoMarket", icon: ShoppingCart, color: "bg-green-500" },
 ];
 
 // Grid menu items (2-column grid, like Facebook's "Páginas", "Grupos", etc.)
