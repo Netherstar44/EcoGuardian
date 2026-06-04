@@ -10,6 +10,7 @@ import { Strategy as GoogleStrategy, type Profile } from "passport-google-oauth2
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db.js";
+// @ts-ignore
 import multer from "multer";
 import cloudinary from "./cloudinary.js";
 import { uploadToCloudinary } from "./cloudinary.js";
@@ -20,7 +21,7 @@ const scryptAsync = promisify(scrypt);
 
 import { productsSeed } from "./products_seed.js";
 import { db } from "./db.js";
-import { users, directMessages } from "../shared/schema.js";
+import { users, directMessages, insertPurchaseRequestSchema, insertProductLikeSchema, marketplaceProducts } from "../shared/schema.js";
 import { eq, and, or, desc, sql } from "drizzle-orm";
 
 async function hashPassword(password: string) {
@@ -880,7 +881,16 @@ export async function registerRoutes(
   app.get('/api/marketplace/products', async (req, res) => {
     try {
       const products = await storage.getMarketplaceProducts();
-      res.json(products);
+      const userId = (req.user as any)?.id;
+      const augmentedProducts = await Promise.all(products.map(async (product) => {
+        const likeInfo = await storage.getProductLikesInfo(product.id, userId);
+        return {
+          ...product,
+          likesCount: likeInfo.count,
+          isLiked: likeInfo.liked,
+        };
+      }));
+      res.json(augmentedProducts);
     } catch (err) {
       res.status(500).json({ message: "Internal server error" });
     }
@@ -924,7 +934,16 @@ export async function registerRoutes(
         minPrice: minPrice ? Number(minPrice) : undefined,
         maxPrice: maxPrice ? Number(maxPrice) : undefined,
       });
-      res.json(products);
+      const userId = (req.user as any)?.id;
+      const augmentedProducts = await Promise.all(products.map(async (product) => {
+        const likeInfo = await storage.getProductLikesInfo(product.id, userId);
+        return {
+          ...product,
+          likesCount: likeInfo.count,
+          isLiked: likeInfo.liked,
+        };
+      }));
+      res.json(augmentedProducts);
     } catch (err) {
       res.status(500).json({ message: "Internal server error" });
     }
@@ -941,7 +960,7 @@ export async function registerRoutes(
 
   app.post('/api/marketplace/products', async (req, res) => {
     try {
-      const user = req.user || { id: 1 };
+      const user = (req.user as any) || { id: 1 };
       let imageUrl = req.body.imageUrl;
 
       if (req.body.imageBase64) {
@@ -981,6 +1000,89 @@ export async function registerRoutes(
       await storage.deleteMarketplaceProduct(productId, user.id);
       res.json({ success: true });
     } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Solicitudes de compra y favoritos de EcoMarket
+  app.post('/api/marketplace/purchase', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const data = {
+        ...req.body,
+        buyerId: user.id,
+      };
+      
+      const parsed = insertPurchaseRequestSchema.safeParse(data);
+      if (!parsed.success) {
+        return res.status(400).json({ error: parsed.error.message });
+      }
+
+      // Validar que el vendedor exista
+      const seller = await storage.getUser(parsed.data.sellerId);
+      if (!seller) {
+        return res.status(400).json({ message: "El vendedor especificado no existe." });
+      }
+
+      // Obtener producto para el correo
+      const [product] = await db
+        .select()
+        .from(marketplaceProducts)
+        .where(eq(marketplaceProducts.id, parsed.data.productId))
+        .limit(1);
+
+      if (!product) {
+        return res.status(404).json({ message: "El producto no existe." });
+      }
+
+      const purchaseRequest = await storage.createPurchaseRequest(parsed.data);
+
+      // Simular el envío de correo al vendedor con los detalles
+      console.log(`[EMAIL SEND SIMULATION] Sending email to seller ${seller.email} (Seller Name: ${seller.name}):
+        - Producto: ${product.title}
+        - Comprador: ${parsed.data.buyerName}
+        - Teléfono: ${parsed.data.buyerPhone}
+        - Correo: ${parsed.data.buyerEmail}
+        - Dirección: ${parsed.data.buyerAddress}
+      `);
+
+      res.status(201).json({
+        success: true,
+        message: "Solicitud enviada correctamente. El vendedor se pondrá en contacto contigo para finalizar la compra.",
+        purchaseRequest
+      });
+    } catch (err: any) {
+      console.error("Error al crear solicitud de compra:", err.message);
+      res.status(500).json({ message: err.message || "Internal server error" });
+    }
+  });
+
+  app.post('/api/marketplace/products/:id/like', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const productId = Number(req.params.id);
+      if (isNaN(productId)) {
+        return res.status(400).json({ message: "ID de producto inválido" });
+      }
+      const result = await storage.toggleProductLike(user.id, productId);
+      res.json(result);
+    } catch (err: any) {
+      console.error("Error al dar/quitar like a producto:", err.message);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get('/api/marketplace/products/:id/like', async (req, res) => {
+    try {
+      const productId = Number(req.params.id);
+      if (isNaN(productId)) {
+        return res.status(400).json({ message: "ID de producto inválido" });
+      }
+      const userId = (req.user as any)?.id;
+      const info = await storage.getProductLikesInfo(productId, userId);
+      res.json(info);
+    } catch (err: any) {
+      console.error("Error al obtener likes del producto:", err.message);
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -1324,7 +1426,7 @@ export async function registerRoutes(
       if (!imageBase64) return res.status(400).json({ message: "No se proporcionó archivo" });
 
       const result = await uploadToCloudinary(imageBase64);
-      res.json({ url: result.secure_url || result.url });
+      res.json({ url: result });
     } catch (err: any) {
       console.error("Error uploading chat file:", err.message);
       res.status(500).json({ message: "Error al subir archivo" });
@@ -1348,7 +1450,7 @@ export async function registerRoutes(
         .from(directMessages)
         .where(eq(directMessages.receiverId, user.id));
 
-      const partnerIds = [...new Set([...sent.map(s => s.partnerId), ...received.map(r => r.partnerId)])];
+      const partnerIds = Array.from(new Set(sent.map(s => s.partnerId).concat(received.map(r => r.partnerId))));
 
       const conversations = await Promise.all(partnerIds.map(async (partnerId) => {
         const partner = await storage.getUser(partnerId);
@@ -1418,8 +1520,9 @@ export async function registerRoutes(
 
         if (data.type === "auth" && data.userId) {
           userId = data.userId;
-          if (!wsClients.has(userId)) wsClients.set(userId, new Set());
-          wsClients.get(userId)!.add(ws);
+          const authUserId = userId as number;
+          if (!wsClients.has(authUserId)) wsClients.set(authUserId, new Set());
+          wsClients.get(authUserId)!.add(ws);
           ws.send(JSON.stringify({ type: "auth_ok" }));
         }
 
@@ -1465,11 +1568,11 @@ export async function registerRoutes(
     const sockets = wsClients.get(targetUserId);
     if (!sockets) return;
     const msg = JSON.stringify(payload);
-    for (const ws of sockets) {
+    sockets.forEach((ws: any) => {
       try {
         if (ws.readyState === 1) ws.send(msg); // 1 = OPEN
       } catch (e) {}
-    }
+    });
   }
 
   return httpServer;

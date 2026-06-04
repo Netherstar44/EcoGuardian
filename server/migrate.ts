@@ -163,6 +163,32 @@ async function migrate() {
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION`);
 
+    // Nuevas tablas para EcoMarket: solicitudes de compra y favoritos
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS purchase_requests (
+        id SERIAL PRIMARY KEY,
+        product_id INTEGER NOT NULL REFERENCES marketplace_products(id) ON DELETE CASCADE,
+        buyer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        seller_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        buyer_name TEXT NOT NULL,
+        buyer_phone TEXT NOT NULL,
+        buyer_email TEXT NOT NULL,
+        buyer_address TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS product_likes (
+        id SERIAL PRIMARY KEY,
+        product_id INTEGER NOT NULL REFERENCES marketplace_products(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        UNIQUE(user_id, product_id)
+      )
+    `);
+
+
     console.log("✅ Todas las migraciones completadas exitosamente");
     process.exit(0);
   } catch (error) {

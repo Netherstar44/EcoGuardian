@@ -356,6 +356,30 @@ export const triviaQuestions = pgTable("trivia_questions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Solicitudes de compra para EcoMarket
+export const purchaseRequests = pgTable("purchase_requests", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id").notNull(),
+  buyerId: integer("buyer_id").notNull(),
+  sellerId: integer("seller_id").notNull(),
+  buyerName: text("buyer_name").notNull(),
+  buyerPhone: text("buyer_phone").notNull(),
+  buyerEmail: text("buyer_email").notNull(),
+  buyerAddress: text("buyer_address").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Likes/Favoritos de productos para EcoMarket
+export const productLikes = pgTable("product_likes", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id").notNull(),
+  userId: integer("user_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  uniqueUserProduct: uniqueIndex("product_likes_user_product_unique").on(table.userId, table.productId),
+}));
+
+
 // ────────────────────────────────────────────────────────────────────────────────
 // RELACIONES PARA LAS NUEVAS TABLAS
 // ────────────────────────────────────────────────────────────────────────────────
@@ -391,6 +415,33 @@ export const marketplaceProductsRelations = relations(marketplaceProducts, ({ on
     references: [users.id],
   }),
 }));
+
+export const purchaseRequestsRelations = relations(purchaseRequests, ({ one }) => ({
+  product: one(marketplaceProducts, {
+    fields: [purchaseRequests.productId],
+    references: [marketplaceProducts.id],
+  }),
+  buyer: one(users, {
+    fields: [purchaseRequests.buyerId],
+    references: [users.id],
+  }),
+  seller: one(users, {
+    fields: [purchaseRequests.sellerId],
+    references: [users.id],
+  }),
+}));
+
+export const productLikesRelations = relations(productLikes, ({ one }) => ({
+  product: one(marketplaceProducts, {
+    fields: [productLikes.productId],
+    references: [marketplaceProducts.id],
+  }),
+  user: one(users, {
+    fields: [productLikes.userId],
+    references: [users.id],
+  }),
+}));
+
 
 export const reelsRelations = relations(reels, ({ one, many }) => ({
   author: one(users, {
@@ -529,3 +580,13 @@ export const insertDirectMessageSchema = createInsertSchema(directMessages).omit
 export type DirectMessage = typeof directMessages.$inferSelect;
 export type InsertDirectMessage = z.infer<typeof insertDirectMessageSchema>;
 export type DirectMessageWithSender = DirectMessage & { sender: Pick<User, "id" | "name" | "avatar"> };
+
+// Schemas y tipos para Solicitudes de Compra y Favoritos
+export const insertPurchaseRequestSchema = createInsertSchema(purchaseRequests).omit({ id: true, createdAt: true });
+export const insertProductLikeSchema = createInsertSchema(productLikes).omit({ id: true, createdAt: true });
+
+export type PurchaseRequest = typeof purchaseRequests.$inferSelect;
+export type InsertPurchaseRequest = z.infer<typeof insertPurchaseRequestSchema>;
+
+export type ProductLike = typeof productLikes.$inferSelect;
+export type InsertProductLike = z.infer<typeof insertProductLikeSchema>;

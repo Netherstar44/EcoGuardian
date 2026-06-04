@@ -4,7 +4,7 @@ import {
   users, reports, comments, ecoPoints, posts, chatConversations,
   postComments, postReactions, userBadges, friendships, carbonFootprint,
   marketplaceProducts, reels, reelComments, reelReactions, minigames,
-  gameHistory, triviaQuestions,
+  gameHistory, triviaQuestions, purchaseRequests, productLikes,
   type User, type InsertUser,
   type Report, type InsertReport,
   type Comment, type InsertComment,
@@ -14,7 +14,9 @@ import {
   type UserBadge, type Friendship, type CarbonFootprint,
   type MarketplaceProduct, type Reel, type ReelWithAuthor,
   type ReelComment, type ReelCommentWithAuthor, type ReelReaction,
-  type Minigame, type GameHistory
+  type Minigame, type GameHistory,
+  type PurchaseRequest, type InsertPurchaseRequest,
+  type ProductLike, type InsertProductLike
 } from "../shared/schema.js";
 
 export interface IStorage {
@@ -56,6 +58,11 @@ export interface IStorage {
   getChatHistory(userId: number | null, sessionId: string): Promise<ChatConversation | undefined>;
   getChatConversationsByUser(userId: number): Promise<ChatConversation[]>;
   getChatConversationsBySessionId(sessionId: string): Promise<ChatConversation | undefined>;
+
+  // Solicitudes de compra y favoritos
+  createPurchaseRequest(data: InsertPurchaseRequest): Promise<PurchaseRequest>;
+  toggleProductLike(userId: number, productId: number): Promise<{ liked: boolean; count: number }>;
+  getProductLikesInfo(productId: number, userId?: number): Promise<{ count: number; liked: boolean }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -669,6 +676,50 @@ export class DatabaseStorage implements IStorage {
       console.error("Error in globalSearch:", error);
       throw error;
     }
+  }
+
+  // Solicitudes de compra y favoritos
+  async createPurchaseRequest(data: InsertPurchaseRequest): Promise<PurchaseRequest> {
+    // Validar que el vendedor exista antes de crear la solicitud
+    const seller = await this.getUser(data.sellerId);
+    if (!seller) {
+      throw new Error("El vendedor especificado no existe.");
+    }
+    const [request] = await db.insert(purchaseRequests).values(data).returning();
+    return request;
+  }
+
+  async toggleProductLike(userId: number, productId: number): Promise<{ liked: boolean; count: number }> {
+    const existing = await db
+      .select()
+      .from(productLikes)
+      .where(and(eq(productLikes.userId, userId), eq(productLikes.productId, productId)))
+      .limit(1);
+
+    let liked = false;
+    if (existing.length > 0) {
+      await db
+        .delete(productLikes)
+        .where(and(eq(productLikes.userId, userId), eq(productLikes.productId, productId)));
+      liked = false;
+    } else {
+      await db.insert(productLikes).values({ userId, productId });
+      liked = true;
+    }
+
+    const info = await this.getProductLikesInfo(productId);
+    return { liked, count: info.count };
+  }
+
+  async getProductLikesInfo(productId: number, userId?: number): Promise<{ count: number; liked: boolean }> {
+    const rows = await db
+      .select()
+      .from(productLikes)
+      .where(eq(productLikes.productId, productId));
+
+    const count = rows.length;
+    const liked = userId ? rows.some(r => r.userId === userId) : false;
+    return { count, liked };
   }
 }
 

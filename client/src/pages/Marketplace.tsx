@@ -39,6 +39,81 @@ export default function Marketplace() {
     quantity: 1,
     imageBase64: "",
   });
+  const [purchaseProduct, setPurchaseProduct] = useState<any>(null);
+  const [purchaseForm, setPurchaseForm] = useState({
+    buyerName: "",
+    buyerPhone: "",
+    buyerEmail: "",
+    buyerAddress: "",
+  });
+
+  useEffect(() => {
+    if (user) {
+      setPurchaseForm({
+        buyerName: user.name || "",
+        buyerPhone: "",
+        buyerEmail: user.email || "",
+        buyerAddress: "",
+      });
+    }
+  }, [user, purchaseProduct]);
+
+  const toggleLikeMutation = useMutation({
+    mutationFn: async (productId: number) => {
+      const res = await apiRequest("POST", `/api/marketplace/products/${productId}/like`);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["marketplace/products"] });
+    },
+  });
+
+  const createPurchaseMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      const res = await apiRequest("POST", "/api/marketplace/purchase", payload);
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || "Error al enviar la solicitud");
+      }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "✅ Solicitud enviada",
+        description: "Solicitud enviada correctamente. El vendedor se pondrá en contacto contigo para finalizar la compra.",
+      });
+      setPurchaseProduct(null);
+    },
+    onError: (err: any) => {
+      toast({
+        title: "❌ Error",
+        description: err.message || "No se pudo enviar la solicitud. Intenta de nuevo.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handlePurchaseSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!purchaseProduct) return;
+    if (!purchaseForm.buyerName || !purchaseForm.buyerPhone || !purchaseForm.buyerEmail || !purchaseForm.buyerAddress) {
+      toast({
+        title: "⚠️ Campos incompletos",
+        description: "Por favor, completa todos los campos del formulario.",
+        variant: "destructive",
+      });
+      return;
+    }
+    createPurchaseMutation.mutate({
+      productId: purchaseProduct.id,
+      sellerId: purchaseProduct.sellerId,
+      buyerName: purchaseForm.buyerName,
+      buyerPhone: purchaseForm.buyerPhone,
+      buyerEmail: purchaseForm.buyerEmail,
+      buyerAddress: purchaseForm.buyerAddress,
+    });
+  };
+
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["marketplace/products", searchQuery, selectedCategory, priceRange],
@@ -300,9 +375,11 @@ export default function Marketplace() {
 
                       <div className="flex items-baseline justify-between">
                         <span className="text-sm md:text-2xl font-bold text-green-600">${product.price.toFixed(2)}</span>
-                        <span className="text-[9px] md:text-xs text-muted-foreground hidden md:inline">
-                          {product.quantity} disp.
-                        </span>
+                        <div className="flex items-center gap-1 text-[9px] md:text-xs text-muted-foreground">
+                          <Heart className={`h-3 w-3 ${product.isLiked ? "fill-red-500 text-red-500" : ""}`} />
+                          <span>{product.likesCount || 0}</span>
+                          <span className="hidden md:inline ml-1">({product.quantity} disp.)</span>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -348,12 +425,32 @@ export default function Marketplace() {
                       </div>
                       
                       <div className="flex gap-2 pt-3 border-t">
-                        <Button className="flex-1 h-10 md:h-12 text-sm md:text-base">
+                        <Button
+                          className="flex-1 h-10 md:h-12 text-sm md:text-base bg-green-600 hover:bg-green-700 text-white"
+                          onClick={() => {
+                            if (!user) {
+                              toast({ title: "⚠️ Inicia sesión", description: "Debes iniciar sesión para realizar una solicitud de compra." });
+                              return;
+                            }
+                            setPurchaseProduct(product);
+                          }}
+                        >
                           <ShoppingCart className="h-4 w-4 mr-1.5" />
                           Comprar
                         </Button>
-                        <Button variant="outline" className="h-10 md:h-12 w-10 md:w-12 p-0 flex-shrink-0">
-                          <Heart className="h-4 w-4" />
+                        <Button
+                          variant="outline"
+                          className={`h-10 md:h-12 flex gap-1.5 px-3 items-center flex-shrink-0 ${product.isLiked ? "border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700" : ""}`}
+                          onClick={() => {
+                            if (!user) {
+                              toast({ title: "⚠️ Inicia sesión", description: "Debes iniciar sesión para agregar a favoritos." });
+                              return;
+                            }
+                            toggleLikeMutation.mutate(product.id);
+                          }}
+                        >
+                          <Heart className={`h-4 w-4 ${product.isLiked ? "fill-red-500 text-red-500" : ""}`} />
+                          <span className="text-xs md:text-sm font-semibold">{product.likesCount || 0}</span>
                         </Button>
                       </div>
                     </div>
@@ -365,6 +462,72 @@ export default function Marketplace() {
           </div>
         )}
       </div>
+
+      {/* Modal de Solicitud de Compra */}
+      <Dialog open={purchaseProduct !== null} onOpenChange={(open) => { if (!open) setPurchaseProduct(null); }}>
+        <DialogContent className="max-w-md bg-background border border-border p-6 rounded-lg shadow-xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Solicitud de Compra</DialogTitle>
+          </DialogHeader>
+          {purchaseProduct && (
+            <div className="mb-4 p-3 bg-muted rounded-md text-sm">
+              <span className="font-semibold text-muted-foreground">Producto:</span> {purchaseProduct.title}
+              <br />
+              <span className="font-semibold text-muted-foreground">Precio:</span> ${purchaseProduct.price.toFixed(2)}
+            </div>
+          )}
+          <form onSubmit={handlePurchaseSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="buyerName">Nombre Completo</Label>
+              <Input
+                id="buyerName"
+                value={purchaseForm.buyerName}
+                onChange={(e) => setPurchaseForm(prev => ({ ...prev, buyerName: e.target.value }))}
+                placeholder="Juan Pérez"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="buyerPhone">Teléfono</Label>
+              <Input
+                id="buyerPhone"
+                value={purchaseForm.buyerPhone}
+                onChange={(e) => setPurchaseForm(prev => ({ ...prev, buyerPhone: e.target.value }))}
+                placeholder="+56 9 1234 5678"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="buyerEmail">Correo Electrónico</Label>
+              <Input
+                id="buyerEmail"
+                type="email"
+                value={purchaseForm.buyerEmail}
+                onChange={(e) => setPurchaseForm(prev => ({ ...prev, buyerEmail: e.target.value }))}
+                placeholder="juan.perez@example.com"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="buyerAddress">Dirección</Label>
+              <Input
+                id="buyerAddress"
+                value={purchaseForm.buyerAddress}
+                onChange={(e) => setPurchaseForm(prev => ({ ...prev, buyerAddress: e.target.value }))}
+                placeholder="Av. Providencia 1234, Santiago"
+                required
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full h-11 mt-2 bg-green-600 hover:bg-green-700 text-white"
+              disabled={createPurchaseMutation.isPending}
+            >
+              {createPurchaseMutation.isPending ? "Enviando..." : "Enviar Solicitud"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
