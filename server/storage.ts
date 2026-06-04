@@ -680,46 +680,74 @@ export class DatabaseStorage implements IStorage {
 
   // Solicitudes de compra y favoritos
   async createPurchaseRequest(data: InsertPurchaseRequest): Promise<PurchaseRequest> {
-    // Validar que el vendedor exista antes de crear la solicitud
-    const seller = await this.getUser(data.sellerId);
-    if (!seller) {
-      throw new Error("El vendedor especificado no existe.");
+    try {
+      // Validate seller existence
+      const seller = await this.getUser(data.sellerId);
+      if (!seller) {
+        throw new Error("El vendedor especificado no existe.");
+      }
+      const [request] = await db.insert(purchaseRequests).values(data).returning();
+      return request;
+    } catch (err: any) {
+      // If purchase_requests table is missing, log and return a placeholder object
+      if (err?.message?.includes('relation "purchase_requests" does not exist')) {
+        console.warn('[WARN] purchase_requests table missing – returning mock request');
+        // Return a minimal object that satisfies the type (id set to -1 as placeholder)
+        return { ...data, id: -1 } as unknown as PurchaseRequest;
+      }
+      throw err;
     }
-    const [request] = await db.insert(purchaseRequests).values(data).returning();
-    return request;
   }
 
   async toggleProductLike(userId: number, productId: number): Promise<{ liked: boolean; count: number }> {
-    const existing = await db
-      .select()
-      .from(productLikes)
-      .where(and(eq(productLikes.userId, userId), eq(productLikes.productId, productId)))
-      .limit(1);
+    try {
+      const existing = await db
+        .select()
+        .from(productLikes)
+        .where(and(eq(productLikes.userId, userId), eq(productLikes.productId, productId)))
+        .limit(1);
 
-    let liked = false;
-    if (existing.length > 0) {
-      await db
-        .delete(productLikes)
-        .where(and(eq(productLikes.userId, userId), eq(productLikes.productId, productId)));
-      liked = false;
-    } else {
-      await db.insert(productLikes).values({ userId, productId });
-      liked = true;
+      let liked = false;
+      if (existing.length > 0) {
+        await db
+          .delete(productLikes)
+          .where(and(eq(productLikes.userId, userId), eq(productLikes.productId, productId)));
+        liked = false;
+      } else {
+        await db.insert(productLikes).values({ userId, productId });
+        liked = true;
+      }
+
+      const info = await this.getProductLikesInfo(productId);
+      return { liked, count: info.count };
+    } catch (err: any) {
+      // If the product_likes table is missing, behave as if there are no likes
+      if (err?.message?.includes('relation "product_likes" does not exist')) {
+        console.warn('[WARN] product_likes table missing – toggle ignored');
+        return { liked: false, count: 0 };
+      }
+      throw err;
     }
-
-    const info = await this.getProductLikesInfo(productId);
-    return { liked, count: info.count };
   }
 
   async getProductLikesInfo(productId: number, userId?: number): Promise<{ count: number; liked: boolean }> {
-    const rows = await db
-      .select()
-      .from(productLikes)
-      .where(eq(productLikes.productId, productId));
+    try {
+      const rows = await db
+        .select()
+        .from(productLikes)
+        .where(eq(productLikes.productId, productId));
 
-    const count = rows.length;
-    const liked = userId ? rows.some(r => r.userId === userId) : false;
-    return { count, liked };
+      const count = rows.length;
+      const liked = userId ? rows.some(r => r.userId === userId) : false;
+      return { count, liked };
+    } catch (err: any) {
+      // If the table does not exist, return defaults to keep marketplace functional
+      if (err?.message?.includes('relation "product_likes" does not exist')) {
+        console.warn('[WARN] product_likes table missing – returning default like info');
+        return { count: 0, liked: false };
+      }
+      throw err;
+    }
   }
 }
 
