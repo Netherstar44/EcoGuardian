@@ -9,7 +9,7 @@ export default function Leaderboard() {
   const { user } = useAuth();
 
   // determine current user position
-  const myIndex = users.findIndex(u => u.id === user?.id);
+  const myIndex = users.findIndex((u: any) => u.id === user?.id);
   const total = users.length;
   const percentile = myIndex >= 0 ? Math.round((1 - myIndex / total) * 100) : 0;
 

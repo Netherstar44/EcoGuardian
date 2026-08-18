@@ -537,7 +537,7 @@ export type InsertMarketplaceProduct = z.infer<typeof insertMarketplaceProductSc
 
 export type Reel = typeof reels.$inferSelect;
 export type InsertReel = z.infer<typeof insertReelSchema>;
-export type ReelWithAuthor = Reel & { author: Pick<User, "id" | "name"> };
+export type ReelWithAuthor = Reel & { author: Pick<User, "id" | "name">; commentsCount?: number };
 export type ReelComment = typeof reelComments.$inferSelect;
 export type ReelCommentWithAuthor = ReelComment & { author: Pick<User, "id" | "name"> };
 export type InsertReelComment = z.infer<typeof insertReelCommentSchema>;

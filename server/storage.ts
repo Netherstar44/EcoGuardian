@@ -63,6 +63,22 @@ export interface IStorage {
   createPurchaseRequest(data: InsertPurchaseRequest): Promise<PurchaseRequest>;
   toggleProductLike(userId: number, productId: number): Promise<{ liked: boolean; count: number }>;
   getProductLikesInfo(productId: number, userId?: number): Promise<{ count: number; liked: boolean }>;
+
+  // Reels
+  createReel(data: any): Promise<Reel>;
+  getReels(): Promise<ReelWithAuthor[]>;
+  getReel(reelId: number): Promise<ReelWithAuthor | undefined>;
+  deleteReel(reelId: number, userId: number): Promise<void>;
+  incrementReelViews(reelId: number): Promise<void>;
+
+  // Reel Comments
+  createReelComment(reelId: number, data: any): Promise<ReelCommentWithAuthor>;
+  getReelComments(reelId: number): Promise<ReelCommentWithAuthor[]>;
+
+  // Reel Reactions
+  getReelReactions(reelId: number, userId?: number): Promise<any>;
+  upsertReelReaction(userId: number, reelId: number, type: string): Promise<void>;
+  removeReelReaction(userId: number, reelId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -487,6 +503,13 @@ export class DatabaseStorage implements IStorage {
     return created;
   }
 
+  async incrementReelViews(reelId: number): Promise<void> {
+    await db
+      .update(reels)
+      .set({ viewCount: sql`COALESCE(${reels.viewCount}, 0) + 1` })
+      .where(eq(reels.id, reelId));
+  }
+
   async getReels(): Promise<ReelWithAuthor[]> {
     const allReels = await db
       .select()
@@ -495,7 +518,17 @@ export class DatabaseStorage implements IStorage {
 
     return await Promise.all(allReels.map(async (reel) => {
       const author = await this.getUser(reel.userId);
-      return { ...reel, author: { id: author!.id, name: author!.name } };
+      const comments = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(reelComments)
+        .where(eq(reelComments.reelId, reel.id));
+      const commentsCount = Number(comments[0]?.count || 0);
+
+      return { 
+        ...reel, 
+        author: author ? { id: author.id, name: author.name } : { id: 0, name: "Usuario" },
+        commentsCount
+      };
     }));
   }
 
@@ -504,7 +537,17 @@ export class DatabaseStorage implements IStorage {
     if (!reel) return undefined;
 
     const author = await this.getUser(reel.userId);
-    return { ...reel, author: { id: author!.id, name: author!.name } };
+    const comments = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(reelComments)
+      .where(eq(reelComments.reelId, reel.id));
+    const commentsCount = Number(comments[0]?.count || 0);
+
+    return { 
+      ...reel, 
+      author: author ? { id: author.id, name: author.name } : { id: 0, name: "Usuario" },
+      commentsCount
+    };
   }
 
   async deleteReel(reelId: number, userId: number): Promise<void> {
@@ -512,23 +555,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Reel Comments
-  async createReelComment(reelId: number, data: any): Promise<ReelComment> {
+  async createReelComment(reelId: number, data: any): Promise<ReelCommentWithAuthor> {
     const [created] = await db
       .insert(reelComments)
       .values({ ...data, reelId })
       .returning();
-    return created;
+    const author = await this.getUser(created.userId);
+    return {
+      ...created,
+      author: author ? { id: author.id, name: author.name } : { id: 0, name: "Usuario" }
+    };
   }
 
   async getReelComments(reelId: number): Promise<ReelCommentWithAuthor[]> {
     const comments = await db
       .select()
       .from(reelComments)
-      .where(eq(reelComments.reelId, reelId));
+      .where(eq(reelComments.reelId, reelId))
+      .orderBy(desc(reelComments.createdAt));
 
     return await Promise.all(comments.map(async (comment) => {
       const author = await this.getUser(comment.userId);
-      return { ...comment, author: { id: author!.id, name: author!.name } };
+      return { 
+        ...comment, 
+        author: author ? { id: author.id, name: author.name } : { id: 0, name: "Usuario" } 
+      };
     }));
   }
 

@@ -221,11 +221,11 @@ function WeatherScene({ code, isNight }: { code: number; isNight: boolean }) {
 function ForecastDay({ day, maxC, minC, code, isFahrenheit }: { day: string; maxC: number; minC: number; code: number; isFahrenheit: boolean }) {
   const info = WMO_CODES[code] ?? WMO_CODES[0];
   return (
-    <div className="flex flex-col items-center gap-1.5 bg-white/10 backdrop-blur-sm rounded-2xl px-3 py-4 flex-1 min-w-0 border border-white/20">
-      <span className="text-xs font-bold text-white/70 uppercase tracking-wide">{day}</span>
-      <span className="text-2xl">{info.emoji}</span>
-      <span className="text-sm font-bold text-white">{formatTemp(maxC, isFahrenheit)}</span>
-      <span className="text-xs text-white/50">{formatTemp(minC, isFahrenheit)}</span>
+    <div className="flex flex-col items-center gap-1.5 bg-muted/70 dark:bg-white/10 backdrop-blur-sm rounded-2xl px-3 py-4 flex-1 min-w-0 border border-border/80 dark:border-white/20 shadow-sm transition-all hover:bg-muted dark:hover:bg-white/15">
+      <span className="text-xs font-bold text-muted-foreground dark:text-white/80 uppercase tracking-wide">{day}</span>
+      <span className="text-2xl my-0.5">{info.emoji}</span>
+      <span className="text-sm font-bold text-foreground dark:text-white">{formatTemp(maxC, isFahrenheit)}</span>
+      <span className="text-xs font-medium text-muted-foreground/80 dark:text-white/60">{formatTemp(minC, isFahrenheit)}</span>
     </div>
   );
 }
@@ -234,10 +234,16 @@ function ForecastDay({ day, maxC, minC, code, isFahrenheit }: { day: string; max
 function HourlyCard({ hour, tempC, code, isFahrenheit, isNow }: { hour: string; tempC: number; code: number; isFahrenheit: boolean; isNow: boolean }) {
   const info = WMO_CODES[code] ?? WMO_CODES[0];
   return (
-    <div className={`flex flex-col items-center gap-2 px-4 py-3 rounded-2xl flex-shrink-0 border transition-all ${isNow ? "bg-white/20 border-white/40 scale-105" : "bg-white/5 border-white/10"}`}>
-      <span className="text-xs font-semibold text-white/70">{isNow ? "Ahora" : hour}</span>
+    <div className={`flex flex-col items-center gap-2 px-4 py-3 rounded-2xl flex-shrink-0 border transition-all ${
+      isNow 
+        ? "bg-primary/15 border-primary/40 dark:bg-white/20 dark:border-white/40 scale-105 shadow-sm" 
+        : "bg-muted/70 border-border/80 dark:bg-white/5 dark:border-white/10 hover:bg-muted"
+    }`}>
+      <span className={`text-xs ${isNow ? "font-bold text-primary dark:text-white" : "font-semibold text-muted-foreground dark:text-white/80"}`}>
+        {isNow ? "Ahora" : hour}
+      </span>
       <span className="text-xl">{info.emoji}</span>
-      <span className="text-sm font-bold text-white">{formatTemp(tempC, isFahrenheit)}</span>
+      <span className="text-sm font-bold text-foreground dark:text-white">{formatTemp(tempC, isFahrenheit)}</span>
     </div>
   );
 }
@@ -454,7 +460,7 @@ export default function Weather() {
       {hourlySlice.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <div className="bg-card border border-border rounded-3xl p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">Próximas horas</h3>
+            <h3 className="text-sm font-bold text-foreground/90 uppercase tracking-wider mb-4">Próximas horas</h3>
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
               {hourlySlice.map((h: any, i: number) => {
                 const hourLabel = new Date(h.time).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: false });
@@ -477,8 +483,8 @@ export default function Weather() {
       {/* 7-day forecast */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <div className="bg-card border border-border rounded-3xl p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">Pronóstico 7 días</h3>
-          <div className="flex gap-2">
+          <h3 className="text-sm font-bold text-foreground/90 uppercase tracking-wider mb-4">Pronóstico 7 días</h3>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
             {weather.daily.time.slice(0, 7).map((dateStr: string, i: number) => {
               const d = new Date(dateStr);
               const dayName = i === 0 ? "Hoy" : DAY_NAMES[d.getDay()];
@@ -500,7 +506,7 @@ export default function Weather() {
       {/* Sunrise/Sunset */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
         <div className="bg-card border border-border rounded-3xl p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">Sol</h3>
+          <h3 className="text-sm font-bold text-foreground/90 uppercase tracking-wider mb-4">Sol</h3>
           <div className="flex justify-around">
             <div className="text-center">
               <span className="text-3xl block mb-1">🌅</span>

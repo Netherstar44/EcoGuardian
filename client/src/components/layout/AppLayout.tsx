@@ -189,7 +189,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     setIsMobileBrowser(isMobile && !isNative);
   }, []);
 
-  const hideSidebarAndChat = ["/messages", "/reels"].some((p) => location.startsWith(p));
+  const hideSidebarAndChat = ["/messages"].some((p) => location.startsWith(p));
   const isLoggedIn = user != null;
   const isAuthReady = !authLoading;
   const queryClient = useQueryClient();

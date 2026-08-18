@@ -1100,11 +1100,27 @@ export async function registerRoutes(
   app.get('/api/reels/:id', async (req, res) => {
     try {
       const reelId = Number(req.params.id);
+      if (isNaN(reelId)) {
+        return res.status(400).json({ message: "ID de reel inválido" });
+      }
       const reel = await storage.getReel(reelId);
       if (!reel) {
         return res.status(404).json({ message: "Reel no encontrado" });
       }
       res.json(reel);
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post('/api/reels/:id/view', async (req, res) => {
+    try {
+      const reelId = Number(req.params.id);
+      if (isNaN(reelId)) {
+        return res.status(400).json({ message: "ID de reel inválido" });
+      }
+      await storage.incrementReelViews(reelId);
+      res.json({ success: true });
     } catch (err) {
       res.status(500).json({ message: "Internal server error" });
     }
