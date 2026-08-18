@@ -121,6 +121,16 @@ app.use((req, res, next) => {
   next();
 });
 
+// Ensure DB columns exist before handling routes in all environments (including Vercel serverless)
+app.use(async (_req, _res, next) => {
+  try {
+    await runStartupMigrations();
+  } catch (err: any) {
+    console.error("[migration middleware error]", err);
+  }
+  next();
+});
+
 (async () => {
   await runStartupMigrations();
   await registerRoutes(httpServer, app);
