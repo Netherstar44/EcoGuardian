@@ -757,7 +757,7 @@ export async function registerRoutes(
         return res.status(401).json({ message: "No autorizado" });
       }
 
-      const { name, bio, city, country, dateOfBirth, latitude, longitude, avatar } = req.body;
+      const { name, bio, city, country, dateOfBirth, latitude, longitude, avatar, whatsappNumber } = req.body;
       const updatedUser = await storage.updateUserProfile(userId, {
         name,
         bio,
@@ -767,6 +767,7 @@ export async function registerRoutes(
         latitude,
         longitude,
         avatar,
+        whatsappNumber,
       });
 
       res.json(updatedUser);
@@ -884,10 +885,13 @@ export async function registerRoutes(
       const userId = (req.user as any)?.id;
       const augmentedProducts = await Promise.all(products.map(async (product) => {
         const likeInfo = await storage.getProductLikesInfo(product.id, userId);
+        const seller = await storage.getUser((product as any).sellerId);
         return {
           ...product,
           likesCount: likeInfo.count,
           isLiked: likeInfo.liked,
+          sellerName: seller?.name || null,
+          sellerWhatsapp: seller?.whatsappNumber || null,
         };
       }));
       res.json(augmentedProducts);
@@ -937,10 +941,13 @@ export async function registerRoutes(
       const userId = (req.user as any)?.id;
       const augmentedProducts = await Promise.all(products.map(async (product) => {
         const likeInfo = await storage.getProductLikesInfo(product.id, userId);
+        const seller = await storage.getUser((product as any).sellerId);
         return {
           ...product,
           likesCount: likeInfo.count,
           isLiked: likeInfo.liked,
+          sellerName: seller?.name || null,
+          sellerWhatsapp: seller?.whatsappNumber || null,
         };
       }));
       res.json(augmentedProducts);

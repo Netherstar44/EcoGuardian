@@ -421,6 +421,7 @@ export default function UserProfile() {
         country: profile.country || "",
         dateOfBirth: profile.dateOfBirth || "",
         avatar: profile.avatar || "",
+        whatsappNumber: (profile as any).whatsappNumber || "",
       });
       setAvatarPreview(profile.avatar || null);
     }
@@ -500,15 +501,19 @@ export default function UserProfile() {
       <style>{reactionAnimStyles}</style>
       {/* Perfil Header */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-        <Card className="border-0 bg-gradient-to-r from-blue-50 to-purple-50 overflow-hidden">
-          <CardContent className="pt-8">
+        <Card className="border border-border/60 bg-card/90 backdrop-blur-md overflow-hidden shadow-xl relative">
+          {/* Subtle eco ambient gradient */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-emerald-500/5 to-teal-500/10 pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-r from-emerald-600/20 via-teal-600/20 to-primary/20 pointer-events-none" />
+
+          <CardContent className="pt-8 pb-6 px-6 sm:px-8 relative z-10">
             <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
               {/* Avatar */}
               <div className="relative">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="h-32 w-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-5xl font-bold shadow-lg overflow-hidden"
+                  className="h-28 w-28 sm:h-32 sm:w-32 rounded-full bg-gradient-to-br from-emerald-500 via-teal-500 to-primary flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-xl overflow-hidden ring-4 ring-background border-2 border-emerald-500/30"
                 >
                   {profile?.avatar ? (
                     <img src={profile.avatar} alt="Avatar" className="w-full h-full object-cover" />
@@ -517,36 +522,55 @@ export default function UserProfile() {
                   )}
                 </motion.div>
                 {isOwnProfile && (
-                  <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full cursor-pointer hover:bg-blue-600 transition shadow-lg">
+                  <label
+                    onClick={() => setIsEditOpen(true)}
+                    className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-2 rounded-full cursor-pointer hover:bg-primary/90 transition shadow-lg ring-2 ring-background"
+                  >
                     <Camera className="h-4 w-4" />
-                    <input type="file" accept="image/*" hidden onChange={handleAvatarUpload} />
                   </label>
                 )}
               </div>
 
               {/* Info */}
-              <div className="flex-1 space-y-4">
+              <div className="flex-1 space-y-3">
                 <div>
-                  <h1 className="text-3xl font-bold text-foreground">{profile?.name ? profile.name : "Cargando..."}</h1>
-                  {profile?.bio && <p className="text-muted-foreground mt-2">{profile.bio}</p>}
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+                    {profile?.name ? profile.name : "Cargando..."}
+                  </h1>
+                  {profile?.name && (
+                    <p className="text-sm text-muted-foreground mt-0.5 font-medium flex items-center gap-1.5">
+                      <User className="h-3.5 w-3.5 text-primary" />
+                      @{(profile.name as string).toLowerCase().replace(/\s+/g, "_")}
+                    </p>
+                  )}
+                  {profile?.bio && (
+                    <p className="text-muted-foreground mt-2 text-sm leading-relaxed max-w-xl">
+                      {profile.bio}
+                    </p>
+                  )}
                   {profile?.dateOfBirth && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      📅 Nacimiento: {new Date(profile.dateOfBirth).toLocaleDateString()}
+                    <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                      <span>📅</span> Nacimiento: {new Date(profile.dateOfBirth).toLocaleDateString()}
                     </p>
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex flex-wrap items-center gap-2.5 text-sm pt-1">
                   {profile?.city && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/70 px-3 py-1 rounded-full border border-border/50 font-medium">
+                      <MapPin className="h-3.5 w-3.5 text-emerald-500" />
                       {profile.city}{profile.country ? `, ${profile.country}` : ""}
                     </div>
                   )}
-                  <div className="flex items-center gap-2 font-bold text-yellow-600">
-                    <Trophy className="h-4 w-4" />
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-500 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                    <Trophy className="h-3.5 w-3.5 text-amber-500" />
                     {profile?.points || 0} eco-puntos
                   </div>
+                  {(profile as any)?.whatsappNumber && (
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-green-500 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
+                      <span>💬</span> WhatsApp: +{(profile as any).whatsappNumber}
+                    </div>
+                  )}
                 </div>
 
                 {/* Acciones */}
@@ -682,6 +706,26 @@ export default function UserProfile() {
                           />
                         </div>
 
+                        {/* WhatsApp */}
+                        <div className="space-y-2">
+                          <Label htmlFor="whatsapp">WhatsApp (para ventas en EcoMarket)</Label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-bold">+</span>
+                            <Input
+                              id="whatsapp"
+                              className="pl-6"
+                              value={(editData as any).whatsappNumber || ""}
+                              onChange={(e) =>
+                                setEditData((prev: any) => ({ ...prev, whatsappNumber: e.target.value }))
+                              }
+                              placeholder="57 300 123 4567 (con código de país)"
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Incluye el código de país sin "+". Ej: <span className="font-mono">57 300 123 4567</span>
+                          </p>
+                        </div>
+
                         {/* País */}
                         <div className="space-y-2">
                           <Label htmlFor="country">País</Label>
@@ -726,30 +770,36 @@ export default function UserProfile() {
       </motion.div>
 
       {/* Estadísticas */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="border border-border/60 bg-card/80 backdrop-blur-sm hover:border-amber-500/40 transition-all hover:shadow-md">
           <CardContent className="pt-6 text-center">
-            <Trophy className="h-8 w-8 mx-auto mb-2 text-yellow-600" />
-            <p className="text-3xl font-bold text-foreground">{badges?.length || 0}</p>
-            <p className="text-sm text-muted-foreground">Logros Desbloqueados</p>
+            <div className="h-12 w-12 mx-auto mb-3 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+              <Trophy className="h-6 w-6 text-amber-500" />
+            </div>
+            <p className="text-3xl font-extrabold text-foreground">{badges?.length || 0}</p>
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Logros Desbloqueados</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border border-border/60 bg-card/80 backdrop-blur-sm hover:border-blue-500/40 transition-all hover:shadow-md">
           <CardContent className="pt-6 text-center">
-            <Users className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-            <p className="text-3xl font-bold text-foreground">
+            <div className="h-12 w-12 mx-auto mb-3 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+              <Users className="h-6 w-6 text-blue-500" />
+            </div>
+            <p className="text-3xl font-extrabold text-foreground">
               {friends?.filter((f: any) => f.friendId === userId || f.userId === userId).length || 0}
             </p>
-            <p className="text-sm text-muted-foreground">Amigos</p>
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Amigos</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border border-border/60 bg-card/80 backdrop-blur-sm hover:border-rose-500/40 transition-all hover:shadow-md">
           <CardContent className="pt-6 text-center">
-            <Heart className="h-8 w-8 mx-auto mb-2 text-red-600" />
-            <p className="text-3xl font-bold text-foreground">{userPosts?.length || 0}</p>
-            <p className="text-sm text-muted-foreground">Publicaciones</p>
+            <div className="h-12 w-12 mx-auto mb-3 rounded-2xl bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
+              <Heart className="h-6 w-6 text-rose-500" />
+            </div>
+            <p className="text-3xl font-extrabold text-foreground">{userPosts?.length || 0}</p>
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1">Publicaciones</p>
           </CardContent>
         </Card>
       </motion.div>
@@ -838,17 +888,17 @@ export default function UserProfile() {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                 >
-                  <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <Card className="border border-border/60 bg-card/80 backdrop-blur-sm overflow-hidden hover:shadow-lg transition-all hover:border-amber-500/30">
                     <CardContent className="pt-6">
                       <div className="flex items-start gap-4">
-                        <div className="px-3 py-1 bg-yellow-100 rounded-full text-3xl">
-                          {badge.icon || "ðŸ†"}
+                        <div className="h-12 w-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-2xl flex-shrink-0">
+                          {badge.icon || "🏆"}
                         </div>
-                        <div className="flex-1">
-                          <h3 className="font-bold text-foreground">{badge.badgeName}</h3>
-                          <p className="text-sm text-muted-foreground">{badge.description}</p>
-                          <p className="text-xs text-yellow-600 font-semibold mt-2">
-                            Requerido: {badge.pointsRequired} puntos
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-foreground truncate">{badge.badgeName}</h3>
+                          <p className="text-sm text-muted-foreground mt-0.5">{badge.description}</p>
+                          <p className="text-xs text-amber-500 font-semibold mt-2 flex items-center gap-1">
+                            <Trophy className="h-3.5 w-3.5" /> Requerido: {badge.pointsRequired} puntos
                           </p>
                         </div>
                       </div>

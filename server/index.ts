@@ -6,6 +6,7 @@ import rateLimit from "express-rate-limit";
 import { registerRoutes } from "./routes.js";
 import { serveStatic } from "./static.js";
 import { createServer } from "http";
+import { runStartupMigrations } from "./db.js";
 
 const app = express();
 // allow secure cookies when deployed behind a proxy (Heroku, Vercel, etc.)
@@ -121,6 +122,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  await runStartupMigrations();
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {

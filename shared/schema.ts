@@ -17,6 +17,7 @@ export const users = pgTable("users", {
   dateOfBirth: date("date_of_birth"),
   latitude: doublePrecision("latitude"),
   longitude: doublePrecision("longitude"),
+  whatsappNumber: text("whatsapp_number"),
 });
 
 export const reports = pgTable("reports", {
