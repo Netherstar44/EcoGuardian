@@ -220,6 +220,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   });
   const pendingCount = Array.isArray(friendRequests) ? friendRequests.length : 0;
 
+  const { data: conversations = [] } = useQuery<any[]>({
+    queryKey: ["/api/conversations"],
+    queryFn: () => apiRequest("GET", "/api/conversations").then(r => r.json()),
+    enabled: isLoggedIn,
+    refetchInterval: 5000,
+  });
+  const unreadMessagesCount = Array.isArray(conversations)
+    ? conversations.reduce((acc: number, c: any) => acc + (c.unreadCount || 0), 0)
+    : 0;
+
   const { data: recentPosts = [] } = useQuery({
     queryKey: ["/api/posts", "recent"],
     queryFn: () => apiRequest("GET", "/api/posts").then(r => r.json()),
@@ -424,10 +434,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               {/* Messages icon — desktop */}
               {isLoggedIn && (
                 <Link href="/messages">
-                  <div className={`hidden md:flex p-2 rounded-full transition-colors cursor-pointer
+                  <div className={`relative hidden md:flex p-2 rounded-full transition-colors cursor-pointer
                     ${location === "/messages" ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
                   >
                     <MessageCircle className="h-5 w-5" />
+                    {unreadMessagesCount > 0 && (
+                      <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background animate-pulse" />
+                    )}
                   </div>
                 </Link>
               )}
@@ -543,8 +556,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
           {/* Mensajes */}
           <Link href="/messages">
-            <div className={`flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all ${location === "/messages" ? "text-primary" : "text-muted-foreground"}`}>
-              <Mail className="h-6 w-6" />
+            <div className={`relative flex flex-col items-center gap-0.5 px-3 py-1.5 transition-all ${location === "/messages" ? "text-primary" : "text-muted-foreground"}`}>
+              <div className="relative">
+                <Mail className="h-6 w-6" />
+                {unreadMessagesCount > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-primary text-primary-foreground text-[10px] font-bold px-1.5 min-w-[16px] h-4 rounded-full flex items-center justify-center ring-2 ring-background">
+                    {unreadMessagesCount > 9 ? "9+" : unreadMessagesCount}
+                  </span>
+                )}
+              </div>
               <span className="text-[10px] font-medium">Mensajes</span>
             </div>
           </Link>

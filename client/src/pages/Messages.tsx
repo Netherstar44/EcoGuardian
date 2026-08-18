@@ -176,17 +176,21 @@ export default function Messages() {
   const { data: friendRecords = [], isLoading: loadingFriends } = useQuery<any[]>({
     queryKey: ["/api/friends"],
     queryFn: () => apiRequest("GET", "/api/friends").then(r => r.json()),
+    refetchInterval: 10000,
   });
 
   const { data: conversations = [], isLoading: loadingConvos } = useQuery<any[]>({
     queryKey: ["/api/conversations"],
     queryFn: () => apiRequest("GET", "/api/conversations").then(r => r.json()),
+    refetchInterval: 3000, // Sync conversation list and unread counts every 3s
   });
 
   const { data: messages = [], isLoading: loadingMsgs } = useQuery<any[]>({
     queryKey: ["/api/messages", activeChatId],
     queryFn: () => apiRequest("GET", `/api/messages?friendId=${selectedFriend?.id}`).then(r => r.json()),
     enabled: !!selectedFriend,
+    refetchInterval: 1500, // Instantaneous message updates & read receipts every 1.5s
+    refetchIntervalInBackground: true,
   });
 
   // ── WebSocket Setup ───────────────────────────────────────────────────────
