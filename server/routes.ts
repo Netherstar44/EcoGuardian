@@ -1243,7 +1243,24 @@ export async function registerRoutes(
         }
       }
 
-      res.json(game);
+      let alreadyPlayed = false;
+      let userPlay = null;
+
+      const userId = (req.user as any)?.id;
+      if (userId) {
+        const history = await storage.getGameHistory(userId);
+        const todayEntry = history.find(h => h.gameId === game!.id);
+        if (todayEntry) {
+          alreadyPlayed = true;
+          userPlay = todayEntry;
+        }
+      }
+
+      res.json({
+        ...game,
+        alreadyPlayed,
+        userPlay,
+      });
     } catch (err: any) {
       console.error("Error en /api/minigames/daily:", err.message);
       res.status(500).json({ message: "Error al cargar el desafío diario", error: err.message });
@@ -1259,9 +1276,24 @@ export async function registerRoutes(
         return res.status(400).json({ message: "gameId y answer son requeridos" });
       }
 
-      const result = await storage.submitGameAnswer(user.id, gameId, answer);
+      const numGameId = Number(gameId);
+
+      // Check if user already completed this game
+      const existingHistory = await storage.getGameHistory(user.id);
+      const previousAttempt = existingHistory.find(h => h.gameId === numGameId);
+      if (previousAttempt) {
+        return res.status(409).json({
+          message: "Ya has completado el desafío diario de hoy. ¡Vuelve mañana para más!",
+          alreadyPlayed: true,
+          isCorrect: previousAttempt.isCorrect,
+          points: previousAttempt.pointsEarned,
+          selectedAnswer: previousAttempt.answer,
+        });
+      }
+
+      const result = await storage.submitGameAnswer(user.id, numGameId, answer);
       
-      if (result.isCorrect) {
+      if (result.isCorrect && result.points > 0) {
         await storage.updateUserPoints(user.id, result.points);
       }
 

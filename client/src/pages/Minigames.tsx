@@ -1,44 +1,80 @@
-import React, { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import React, { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Brain, Trophy, Zap, CheckCircle, XCircle, Clock, Award } from "lucide-react";
+import { Brain, Trophy, Zap, CheckCircle, XCircle, Clock, Award, AlertCircle, Sparkles, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+function MidnightCountdown() {
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date();
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+      const diff = tomorrow.getTime() - now.getTime();
+      
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      setTimeLeft(`${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return <span className="font-mono font-bold tracking-wider">{timeLeft}</span>;
+}
 
 export default function Minigames() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [answered, setAnswered] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const queryClient = useQueryClient();
 
-  const { data: game, isLoading, isError, error } = useQuery({
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [localResult, setLocalResult] = useState<any>(null);
+
+  const { data: game, isLoading, isError, refetch: refetchDaily } = useQuery<any>({
     queryKey: ["/api/minigames/daily"],
     queryFn: () => apiRequest("GET", "/api/minigames/daily").then(r => r.json()),
     enabled: !!user,
   });
 
-  const { data: history } = useQuery({
+  const { data: history = [] } = useQuery<any[]>({
     queryKey: ["/api/minigames/history"],
     queryFn: () => apiRequest("GET", "/api/minigames/history").then(r => r.json()),
     enabled: !!user,
   });
 
+  // Check if today's game was already completed in history or in daily response
+  const existingAttempt = (Array.isArray(history) ? history.find((h: any) => h.gameId === game?.id) : null) || game?.userPlay;
+  const isAlreadyPlayed = !!existingAttempt || !!game?.alreadyPlayed || !!localResult;
+  const activeResult = localResult || (existingAttempt ? {
+    isCorrect: existingAttempt.isCorrect,
+    points: existingAttempt.pointsEarned,
+    answer: existingAttempt.answer,
+  } : null);
+
   const submitAnswerMutation = useMutation({
     mutationFn: async () => {
-      if (!selectedAnswer || !game) throw new Error("No answer selected");
-      return apiRequest("POST", "/api/minigames/submit", {
+      if (!selectedAnswer || !game?.id) throw new Error("Debes seleccionar una respuesta");
+      const res = await apiRequest("POST", "/api/minigames/submit", {
         gameId: game.id,
         answer: selectedAnswer,
-      }).then(r => r.json());
+      });
+      return res.json();
     },
     onSuccess: (data) => {
-      setResult(data);
-      setAnswered(true);
+      setLocalResult(data);
       queryClient.invalidateQueries({ queryKey: ["/api/minigames/history"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/minigames/daily"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       
       if (data?.isCorrect) {
         toast({
@@ -49,30 +85,42 @@ export default function Minigames() {
         toast({
           variant: "destructive",
           title: "❌ Respuesta Incorrecta",
-          description: "Intenta mañana para ganar eco-puntos",
+          description: "Has consumido tu intento diario. ¡Vuelve mañana para ganar más eco-puntos!",
         });
       }
     },
     onError: (error: any) => {
-      console.error("Error submitting answer:", error);
-      toast({
-        variant: "destructive",
-        title: "❌ Error",
-        description: error?.message || "Error al responder la pregunta",
-      });
-      setSelectedAnswer(null);
+      // If user already played (e.g. 409 or already recorded)
+      if (error?.message?.includes("ya has completado") || error?.message?.includes("409")) {
+        toast({
+          title: "ℹ️ Desafío ya completado",
+          description: "Ya has respondido la pregunta de hoy.",
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/minigames/daily"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/minigames/history"] });
+      } else {
+        console.error("Error submitting answer:", error);
+        toast({
+          variant: "destructive",
+          title: "❌ Error",
+          description: error?.message || "Error al enviar la respuesta",
+        });
+      }
     },
   });
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="w-full max-w-md">
-          <CardHeader>
+      <div className="flex items-center justify-center min-h-[70vh] p-4">
+        <Card className="w-full max-w-md shadow-lg border-border">
+          <CardHeader className="text-center">
+            <Brain className="h-12 w-12 text-primary mx-auto mb-2" />
             <CardTitle>Inicia sesión</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">Debes iniciar sesión para jugar minijuegos</p>
+          <CardContent className="text-center">
+            <p className="text-muted-foreground text-sm">
+              Debes iniciar sesión con tu cuenta para jugar a los minijuegos diarios y acumular eco-puntos.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -81,26 +129,25 @@ export default function Minigames() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Zap className="h-12 w-12 animate-spin mx-auto mb-4 text-yellow-500" />
-          <p className="text-muted-foreground">Cargando desafío diario...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-[70vh] gap-3">
+        <Zap className="h-12 w-12 animate-spin text-primary" />
+        <p className="text-muted-foreground font-medium animate-pulse">Cargando desafío diario...</p>
       </div>
     );
   }
 
   if (isError || !game) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-red-600">Error al cargar</CardTitle>
+      <div className="flex items-center justify-center min-h-[70vh] p-4">
+        <Card className="w-full max-w-md border-border shadow-lg">
+          <CardHeader className="text-center">
+            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-2" />
+            <CardTitle className="text-destructive">Error al cargar</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">No se pudo cargar el desafío diario.</p>
-            <Button onClick={() => location.reload()} className="w-full">
-              Reintentar
+          <CardContent className="space-y-4 text-center">
+            <p className="text-muted-foreground text-sm">No se pudo cargar el desafío diario de hoy.</p>
+            <Button onClick={() => refetchDaily()} className="w-full rounded-full gap-2 font-semibold">
+              <RefreshCw className="h-4 w-4" /> Reintentar
             </Button>
           </CardContent>
         </Card>
@@ -108,236 +155,334 @@ export default function Minigames() {
     );
   }
 
-  const options = game?.options ? JSON.parse(game.options) : [];
+  const options = game?.options ? (typeof game.options === "string" ? JSON.parse(game.options) : game.options) : [];
   const totalGames = Array.isArray(history) ? history.length : 0;
   const correctAnswers = Array.isArray(history) ? history.filter((h: any) => h.isCorrect).length : 0;
   const totalPoints = Array.isArray(history) ? history.reduce((sum: number, h: any) => sum + (h.pointsEarned || 0), 0) : 0;
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto p-4 sm:p-6 pb-20">
+      
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-        <h1 className="text-4xl font-bold text-foreground flex items-center gap-3">
-          <Brain className="h-10 w-10 text-purple-500" />
-          Minijuegos Diarios
-        </h1>
-        <p className="text-muted-foreground">Aprende sobre medio ambiente y gana eco-puntos cada día</p>
+      <motion.div initial={{ opacity: 0, y: -15 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm">
+              <Brain className="h-7 w-7" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+                Desafío Diario
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Pon a prueba tus conocimientos ecológicos y gana eco-puntos
+              </p>
+            </div>
+          </div>
+
+          {/* Daily Attempts Badge (Live status) */}
+          <div className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-bold shadow-sm transition-all ${
+            isAlreadyPlayed
+              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+              : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 animate-pulse"
+          }`}>
+            <span className={`h-2 w-2 rounded-full ${isAlreadyPlayed ? "bg-amber-500" : "bg-emerald-500"}`} />
+            <span>
+              {isAlreadyPlayed ? "Intentos hoy: 0 / 1 (Consumido)" : "Intentos hoy: 1 / 1 disponible"}
+            </span>
+          </div>
+        </div>
       </motion.div>
 
-      {/* Stats */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <Trophy className="h-8 w-8 mx-auto mb-2 text-purple-600" />
-              <p className="text-3xl font-bold text-purple-600">{correctAnswers}/{totalGames}</p>
-              <p className="text-sm text-muted-foreground">Respuestas Correctas</p>
+      {/* Stats Cards */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <Card className="border-border bg-card shadow-sm">
+          <CardContent className="pt-5 pb-4 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+              <Trophy className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-2xl font-black text-foreground leading-none">{correctAnswers} / {totalGames}</p>
+              <p className="text-xs text-muted-foreground font-medium mt-1">Aciertos / Total</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <Award className="h-8 w-8 mx-auto mb-2 text-yellow-600" />
-              <p className="text-3xl font-bold text-yellow-600">{totalPoints}</p>
-              <p className="text-sm text-muted-foreground">Eco-Puntos Ganados</p>
+        <Card className="border-border bg-card shadow-sm">
+          <CardContent className="pt-5 pb-4 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Award className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-2xl font-black text-foreground leading-none">+{totalPoints}</p>
+              <p className="text-xs text-muted-foreground font-medium mt-1">Eco-puntos ganados</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <Zap className="h-8 w-8 mx-auto mb-2 text-green-600" />
-              <p className="text-3xl font-bold text-green-600">{totalGames} días</p>
-              <p className="text-sm text-muted-foreground">Activos</p>
+        <Card className="border-border bg-card shadow-sm">
+          <CardContent className="pt-5 pb-4 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <Zap className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-2xl font-black text-foreground leading-none">{totalGames} {totalGames === 1 ? "día" : "días"}</p>
+              <p className="text-xs text-muted-foreground font-medium mt-1">Racha de participación</p>
             </div>
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* Daily Challenge */}
-      {!answered || !result ? (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="border-2 border-purple-200 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-purple-500 to-blue-500 text-white">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-white">Desafío de Hoy</CardTitle>
-                <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
-                  <Clock className="h-4 w-4" />
-                  <span className="text-sm">Disponible 24 horas</span>
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardContent className="pt-8">
-              {game?.imageUrl && (
-                <motion.img
-                  src={game.imageUrl}
-                  alt="Pregunta"
-                  className="w-full max-h-64 object-cover rounded-lg mb-6"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                />
-              )}
-
-              {/* Pregunta */}
-              <div className="mb-8">
-                <p className="text-sm text-muted-foreground mb-2">PREGUNTA {game?.difficulty?.toUpperCase() || "MEDIA"}</p>
-                <h2 className="text-2xl font-bold text-foreground mb-4">{game?.question}</h2>
-                <div className="flex items-center gap-2">
-                  <Award className="h-5 w-5 text-yellow-500" />
-                  <span className="font-semibold text-yellow-600">+{game?.points || 10} eco-puntos</span>
-                </div>
-              </div>
-
-              {/* Opciones */}
-              <div className="space-y-3">
-                {options.map((option: string, idx: number) => (
-                  <motion.button
-                    key={idx}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => !selectedAnswer && setSelectedAnswer(option)}
-                    disabled={!!selectedAnswer}
-                    className={`w-full p-4 text-left rounded-lg border-2 font-medium transition-all ${
-                      selectedAnswer === option
-                        ? "border-purple-500 bg-purple-50 text-purple-700"
-                        : selectedAnswer
-                        ? "border-gray-200 bg-gray-50 text-gray-400"
-                        : "border-gray-200 hover:border-purple-300 bg-background hover:bg-purple-50/50 text-foreground"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex items-center justify-center w-6 h-6 rounded-full font-bold ${
-                          selectedAnswer === option
-                            ? "bg-purple-500 text-white"
-                            : "bg-gray-200 text-gray-600"
-                        }`}
-                      >
-                        {String.fromCharCode(65 + idx)}
-                      </div>
-                      {option}
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-
-              <Button
-                onClick={() => submitAnswerMutation.mutate()}
-                disabled={!selectedAnswer || submitAnswerMutation.isPending}
-                className="w-full mt-8 h-12 text-base font-semibold"
-              >
-                {submitAnswerMutation.isPending ? "Verificando..." : "Responder"}
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-      ) : (
-        <AnimatePresence>
-          <motion.div
-            key="result"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-          >
-            <Card
-              className={`border-2 overflow-hidden ${
-                result.isCorrect
-                  ? "border-green-200 bg-green-50/50"
-                  : "border-red-200 bg-red-50/50"
-              }`}
-            >
-              <CardHeader
-                className={`bg-gradient-to-r ${
-                  result.isCorrect
-                    ? "from-green-500 to-emerald-500"
-                    : "from-red-500 to-orange-500"
-                } text-white`}
-              >
-                <CardTitle className="text-white text-center text-3xl">
-                  {result.isCorrect ? "🎉 ¡CORRECTO!" : "❌ INCORRECTO"}
+      {/* Main Challenge Card */}
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <Card className={`overflow-hidden border-2 shadow-lg transition-all ${
+          isAlreadyPlayed 
+            ? "border-border bg-card" 
+            : "border-primary/40 bg-card"
+        }`}>
+          
+          {/* Challenge Card Header */}
+          <CardHeader className="bg-gradient-to-r from-emerald-600 via-teal-600 to-primary text-white p-4 sm:p-5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-yellow-300" />
+                <CardTitle className="text-lg sm:text-xl font-bold text-white">
+                  Pregunta de Hoy
                 </CardTitle>
-              </CardHeader>
+              </div>
 
-              <CardContent className="pt-8 text-center space-y-6">
+              {isAlreadyPlayed ? (
+                <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-white/90 border border-white/20">
+                  <Clock className="h-3.5 w-3.5 text-yellow-300" />
+                  <span>Nuevo en: </span>
+                  <MidnightCountdown />
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-white">
+                  <Award className="h-3.5 w-3.5 text-yellow-300" />
+                  <span>+{game?.points || 10} Eco-puntos</span>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-5 sm:p-7 space-y-6">
+            
+            {/* If user ALREADY completed today's challenge */}
+            {isAlreadyPlayed && activeResult ? (
+              <div className="space-y-6">
+                
+                {/* Result Status Banner */}
+                <div className={`p-4 rounded-2xl border flex items-center gap-3.5 ${
+                  activeResult.isCorrect
+                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300"
+                    : "bg-red-500/10 border-red-500/30 text-red-800 dark:text-red-300"
+                }`}>
+                  <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
+                    activeResult.isCorrect ? "bg-emerald-500 text-white" : "bg-red-500 text-white"
+                  }`}>
+                    {activeResult.isCorrect ? <CheckCircle className="h-6 w-6" /> : <XCircle className="h-6 w-6" />}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base">
+                      {activeResult.isCorrect ? "¡Has acertado la pregunta de hoy!" : "Respuesta incorrecta"}
+                    </h3>
+                    <p className="text-xs opacity-90">
+                      {activeResult.isCorrect 
+                        ? `Has ganado +${activeResult.points || 10} eco-puntos para tu perfil.`
+                        : "No sumaste eco-puntos hoy, ¡pero aprendiste algo nuevo!"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Question Info */}
                 <div>
-                  <p className="text-lg text-muted-foreground mb-2">La respuesta correcta era:</p>
-                  <p className="text-2xl font-bold text-foreground bg-white/50 p-4 rounded-lg">
-                    {game?.correctAnswer}
+                  <span className="inline-block px-2.5 py-0.5 rounded-md bg-muted text-muted-foreground text-[11px] font-bold uppercase tracking-wider mb-2">
+                    Dificultad: {game?.difficulty?.toUpperCase() || "MEDIA"}
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-snug">
+                    {game?.question}
+                  </h2>
+                </div>
+
+                {/* Options showing correct answer & user's choice */}
+                <div className="space-y-2.5">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Opciones y Resultado:
+                  </p>
+                  {options.map((option: string, idx: number) => {
+                    const isCorrectAnswer = option === game?.correctAnswer;
+                    const isUserChoice = option === activeResult.answer || option === selectedAnswer;
+
+                    let optionStyle = "border-border/60 bg-muted/30 text-muted-foreground opacity-70";
+                    let badge = null;
+
+                    if (isCorrectAnswer) {
+                      optionStyle = "border-emerald-500 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200 font-bold opacity-100 shadow-sm";
+                      badge = <span className="ml-auto text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">✓ Correcta</span>;
+                    } else if (isUserChoice && !activeResult.isCorrect) {
+                      optionStyle = "border-red-500 bg-red-500/10 text-red-900 dark:text-red-200 font-semibold opacity-100";
+                      badge = <span className="ml-auto text-xs text-red-600 dark:text-red-400 font-bold flex items-center gap-1">✗ Tu elección</span>;
+                    }
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`w-full p-3.5 sm:p-4 rounded-xl border-2 flex items-center gap-3 transition-all ${optionStyle}`}
+                      >
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                          isCorrectAnswer 
+                            ? "bg-emerald-500 text-white" 
+                            : isUserChoice && !activeResult.isCorrect 
+                            ? "bg-red-500 text-white" 
+                            : "bg-muted text-muted-foreground"
+                        }`}>
+                          {String.fromCharCode(65 + idx)}
+                        </div>
+                        <span className="text-sm flex-1">{option}</span>
+                        {badge}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Consumed attempts notice */}
+                <div className="p-4 rounded-2xl bg-muted/60 border border-border text-center space-y-2">
+                  <div className="flex items-center justify-center gap-2 text-sm font-bold text-foreground">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <span>Has consumido tu intento diario (1/1)</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                    El próximo minijuego y oportunidad para sumar eco-puntos estará disponible en{" "}
+                    <MidnightCountdown />.
                   </p>
                 </div>
 
-                {result.isCorrect ? (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 200 }}
-                    className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6"
-                  >
-                    <p className="text-4xl font-bold text-yellow-600 mb-2">+{result.points}</p>
-                    <p className="text-lg font-semibold text-yellow-700">eco-puntos ganados</p>
-                  </motion.div>
-                ) : (
-                  <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
-                    <p className="text-lg font-semibold text-blue-700">
-                      Vuelve mañana para conseguir tu próximo desafío
-                    </p>
-                  </div>
+              </div>
+            ) : (
+              /* User has NOT yet answered today's challenge */
+              <div className="space-y-6">
+                
+                {/* Question Image if present */}
+                {game?.imageUrl && (
+                  <img
+                    src={game.imageUrl}
+                    alt="Desafío"
+                    className="w-full max-h-60 object-cover rounded-2xl border border-border"
+                  />
                 )}
 
-                <Button
-                  onClick={() => location.reload()}
-                  variant="outline"
-                  className="w-full h-12 text-base"
-                >
-                  Volver a Inicio
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </AnimatePresence>
-      )}
-
-      {/* Historial */}
-      {history && history.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Últimos Desafíos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {history.slice(0, 5).map((h: any, idx: number) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    className="flex items-center justify-between p-3 bg-background rounded-lg border border-border"
-                  >
-                    <div className="flex items-center gap-3">
-                      {h.isCorrect ? (
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <XCircle className="h-5 w-5 text-red-500" />
-                      )}
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(h.completedAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <span className={`font-bold ${h.isCorrect ? "text-green-600" : "text-red-600"}`}>
-                      +{h.pointsEarned}
+                {/* Question Text */}
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="inline-block px-2.5 py-0.5 rounded-md bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-wider">
+                      Dificultad: {game?.difficulty?.toUpperCase() || "MEDIA"}
                     </span>
-                  </motion.div>
+                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full">
+                      +{game?.points || 10} Eco-puntos
+                    </span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-snug">
+                    {game?.question}
+                  </h2>
+                </div>
+
+                {/* Selectable Options */}
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Selecciona tu respuesta:
+                  </p>
+                  {options.map((option: string, idx: number) => {
+                    const isSelected = selectedAnswer === option;
+                    return (
+                      <motion.button
+                        key={idx}
+                        type="button"
+                        whileTap={{ scale: 0.99 }}
+                        onClick={() => setSelectedAnswer(option)}
+                        disabled={submitAnswerMutation.isPending}
+                        className={`w-full p-3.5 sm:p-4 text-left rounded-xl border-2 font-medium transition-all flex items-center gap-3.5 ${
+                          isSelected
+                            ? "border-primary bg-primary/10 text-primary font-bold shadow-md shadow-primary/10"
+                            : "border-border hover:border-primary/40 bg-card hover:bg-muted/50 text-foreground"
+                        }`}
+                      >
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
+                          isSelected 
+                            ? "bg-primary text-primary-foreground" 
+                            : "bg-muted text-muted-foreground"
+                        }`}>
+                          {String.fromCharCode(65 + idx)}
+                        </div>
+                        <span className="text-sm flex-1">{option}</span>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                {/* Submit Action Button */}
+                <Button
+                  onClick={() => submitAnswerMutation.mutate()}
+                  disabled={!selectedAnswer || submitAnswerMutation.isPending}
+                  className="w-full h-12 text-base font-bold rounded-xl shadow-lg shadow-primary/20"
+                >
+                  {submitAnswerMutation.isPending ? "Verificando respuesta..." : "Enviar Respuesta (1 Intento)"}
+                </Button>
+              </div>
+            )}
+
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* History Section */}
+      {history && history.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <Card className="border-border bg-card shadow-sm">
+            <CardHeader className="pb-3 border-b border-border/50">
+              <CardTitle className="text-base sm:text-lg font-bold flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-amber-500" />
+                Historial de Desafíos
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="space-y-2.5">
+                {history.slice(0, 7).map((h: any, idx: number) => (
+                  <div
+                    key={h.id || idx}
+                    className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/60 hover:bg-muted/70 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
+                        h.isCorrect ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"
+                      }`}>
+                        {h.isCorrect ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm font-semibold text-foreground truncate">
+                          {h.isCorrect ? "Respuesta Correcta" : "Respuesta Incorrecta"}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {new Date(h.completedAt).toLocaleDateString("es-CO", { day: "numeric", month: "short", year: "numeric" })}
+                        </p>
+                      </div>
+                    </div>
+
+                    <span className={`text-xs sm:text-sm font-bold px-2.5 py-1 rounded-full ${
+                      h.isCorrect 
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
+                        : "bg-red-500/10 text-red-600 dark:text-red-400"
+                    }`}>
+                      +{h.pointsEarned || 0} pts
+                    </span>
+                  </div>
                 ))}
               </div>
             </CardContent>
           </Card>
         </motion.div>
       )}
+
     </div>
   );
 }
