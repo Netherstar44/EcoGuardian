@@ -196,7 +196,7 @@ export default function Chatbot() {
               messages.map((msg, idx) => (
                 <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] px-4 py-3 rounded-2xl ${msg.role === 'user' ? 'bg-gradient-to-br from-primary to-accent text-white rounded-br-none' : 'bg-muted text-foreground border border-border rounded-bl-none shadow-md'}`}>
-                    <p className="text-sm leading-relaxed break-words">{msg.content}</p>
+                    <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">{msg.content}</p>
                   </div>
                 </motion.div>
               ))

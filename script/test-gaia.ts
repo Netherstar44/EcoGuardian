@@ -3,20 +3,22 @@ import 'dotenv/config';
 async function testGrokAPI() {
   console.log('🧪 Iniciando pruebas del chatbot Gaia...\n');
 
-  const API_KEY = process.env.GROK_API_KEY;
+  const API_KEY = process.env.GROQ_API_KEY || process.env.GROK_API_KEY;
+  const MODEL = process.env.GROQ_MODEL || 'qwen/qwen3.8-27b';
   
   if (!API_KEY) {
-    console.error('❌ ERROR: GROK_API_KEY no está configurada en .env');
+    console.error('❌ ERROR: GROQ_API_KEY / GROK_API_KEY no está configurada');
     return;
   }
 
   console.log('✅ API Key encontrada:', API_KEY.substring(0, 10) + '...');
+  console.log('🤖 Modelo a probar:', MODEL);
 
   // Test 1: Verificar disponibilidad de la API
   console.log('\n📡 Test 1: Verificando disponibilidad de API de Groq');
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -29,16 +31,16 @@ async function testGrokAPI() {
         messages: [
           { 
             role: 'system', 
-            content: 'Eres Gaia, la diosa ambientalista. Responde siempre en español.' 
+            content: 'Eres Gaia, la diosa ambientalista de EcoGuardian. Responde siempre en español con calidez y sabiduría ecológica.' 
           },
           { 
             role: 'user', 
-            content: 'Hola' 
+            content: '¡Hola Gaia! ¿Cómo puedo empezar a reciclar en casa?' 
           }
         ],
-        model: 'llama-3.1-8b-instant',
+        model: MODEL,
         temperature: 0.7,
-        max_tokens: 50
+        max_tokens: 150
       })
     });
 
@@ -50,23 +52,19 @@ async function testGrokAPI() {
       const errorText = await response.text();
       console.error(`❌ Error en API de Groq: ${response.status}`);
       console.error('Respuesta:', errorText.substring(0, 200));
-      console.error('\n⚠️ Posibles problemas:');
-      console.error('- API key inválida o expirada');
-      console.error('- Modelo no disponible');
-      console.error('- Límite de cuota alcanzado');
       return;
     }
 
     const data = await response.json();
     
     if (!data.choices || !data.choices[0]?.message?.content) {
-      console.error('❌ Respuesta inválida de Grok:');
+      console.error('❌ Respuesta inválida de Groq:');
       console.error(JSON.stringify(data, null, 2));
       return;
     }
 
     console.log('✅ API de Groq funcionando correctamente');
-    console.log('Respuesta:', data.choices[0].message.content.substring(0, 100));
+    console.log('🌱 Respuesta de Gaia:\n', data.choices[0].message.content);
 
   } catch (error: any) {
     console.error('❌ Error de conexión a Groq:', error.message);
@@ -76,7 +74,7 @@ async function testGrokAPI() {
     return;
   }
 
-  console.log('\n✨ ¡Test completado!');
+  console.log('\n✨ ¡Test completado con éxito!');
 }
 
 testGrokAPI();

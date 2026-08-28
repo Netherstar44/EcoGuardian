@@ -525,63 +525,92 @@ export async function registerRoutes(
       }
 
       const systemMessage = userName 
-        ? `Eres Gaia, la diosa ambientalista de la Tierra y guardiana de EcoGuardian. Eres apasionada por proteger nuestro planeta y ayudar a los usuarios a tomar decisiones sostenibles. Siempre dirígete al usuario por su nombre: ${userName}. Mantén el contexto de los mensajes anteriores para proporcionar respuestas precisas y personalizadas. Si esta es la primera interacción, preséntate cálidamente como Gaia. Mantén tus respuestas concisas y útiles. Responde SIEMPRE en español.`
-        : `Eres Gaia, la diosa ambientalista de la Tierra y guardiana de EcoGuardian. Eres apasionada por proteger nuestro planeta y ayudar a los usuarios a tomar decisiones sostenibles. Mantén el contexto de los mensajes anteriores para proporcionar respuestas precisas. Si esta es la primera interacción, preséntate cálidamente como Gaia. Mantén tus respuestas concisas y útiles. Responde SIEMPRE en español.`;
+        ? `Eres Gaia, la diosa ambientalista de la Tierra y guardiana de EcoGuardian. Eres apasionada por proteger nuestro planeta y ayudar a los usuarios a tomar decisiones sostenibles. Siempre dirígete al usuario por su nombre: ${userName}. Mantén el contexto de los mensajes anteriores para proporcionar respuestas precisas y personalizadas. Si esta es la primera interacción, preséntate cálidamente como Gaia. Mantén tus respuestas concisas, inspiradoras y útiles. Responde SIEMPRE en español.`
+        : `Eres Gaia, la diosa ambientalista de la Tierra y guardiana de EcoGuardian. Eres apasionada por proteger nuestro planeta y ayudar a los usuarios a tomar decisiones sostenibles. Mantén el contexto de los mensajes anteriores para proporcionar respuestas precisas. Si esta es la primera interacción, preséntate cálidamente como Gaia. Mantén tus respuestas concisas, inspiradoras y útiles. Responde SIEMPRE en español.`;
+
+      const sanitizedMessages = messages
+        .filter((m: any) => m && typeof m.content === 'string' && (m.role === 'user' || m.role === 'assistant'))
+        .map((m: any) => ({ role: m.role, content: m.content }));
 
       const grokMessages = [
         { role: 'system', content: systemMessage },
-        ...messages
+        ...sanitizedMessages
       ];
 
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
-
-      let grokResponse;
-      try {
-        grokResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          signal: controller.signal,
-          headers: {
-            'Authorization': `Bearer ${process.env.GROK_API_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            messages: grokMessages,
-            model: 'llama-3.1-8b-instant',
-            temperature: 0.7,
-            max_tokens: 500
-          })
-        });
-      } catch (fetchError: any) {
-        clearTimeout(timeout);
-        throw fetchError;
-      }
-
-      clearTimeout(timeout);
-
-      if (!grokResponse.ok) {
-        const errorText = await grokResponse.text();
-        console.error(`[CHAT ERROR] Groq API error ${grokResponse.status}:`, errorText);
+      const apiKey = process.env.GROQ_API_KEY || process.env.GROK_API_KEY;
+      if (!apiKey) {
+        console.error('[CHAT ERROR] No GROQ_API_KEY or GROK_API_KEY configured in environment');
         return res.json({ 
-          response: `¡Hola! Soy Gaia. Actualmente hay un problema técnico con mi conexión a la red, pero estoy aquí para ayudarte con tus dudas ambientales. ${userName ? `¿Cómo puedo ayudarte hoy, ${userName}?` : '¿En qué puedo ayudarte?'}` 
+          response: `¡Hola! Soy Gaia. Actualmente mi conexión con el servidor de inteligencia artificial no está configurada. Por favor, asegúrate de configurar GROQ_API_KEY en las variables de entorno.` 
         });
       }
+      const candidateModels = [
+        process.env.GROQ_MODEL,
+        'qwen/qwen3.8-27b',
+        'openai/gpt-oss-20b',
+        'openai/gpt-oss-120b',
+        'groq/compound-mini'
+      ].filter(Boolean) as string[];
 
-      const grokData = await grokResponse.json();
-      const assistantMessage = grokData.choices?.[0]?.message?.content;
+      let assistantMessage = '';
+      let lastError: any = null;
+
+      for (const model of candidateModels) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 20000);
+
+        try {
+          const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            signal: controller.signal,
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              messages: grokMessages,
+              model: model,
+              temperature: 0.7,
+              max_tokens: 600
+            })
+          });
+
+          clearTimeout(timeout);
+
+          if (groqResponse.ok) {
+            const grokData = await groqResponse.json();
+            assistantMessage = grokData.choices?.[0]?.message?.content || '';
+            if (assistantMessage) {
+              console.log(`[CHAT] Successfully generated response with model: ${model}`);
+              break;
+            }
+          } else {
+            const errorText = await groqResponse.text();
+            console.warn(`[CHAT WARN] Model ${model} returned ${groqResponse.status}: ${errorText}`);
+            lastError = new Error(`Status ${groqResponse.status}: ${errorText}`);
+          }
+        } catch (fetchErr: any) {
+          clearTimeout(timeout);
+          console.warn(`[CHAT WARN] Attempt with model ${model} failed:`, fetchErr.message);
+          lastError = fetchErr;
+        }
+      }
 
       if (!assistantMessage) {
-        return res.json({ response: 'Lo siento, recibí una respuesta vacía. Por favor, intenta de nuevo.' });
+        console.error('[CHAT ERROR] All candidate models failed. Last error:', lastError);
+        return res.json({ 
+          response: `¡Hola! Soy Gaia. Actualmente hay un problema técnico con mi conexión, pero estoy aquí para ayudarte con tus dudas ambientales. ${userName ? `¿Cómo puedo ayudarte hoy, ${userName}?` : '¿En qué puedo ayudarte?'}` 
+        });
       }
 
-      res.json({ response: assistantMessage });
+      return res.json({ response: assistantMessage });
 
     } catch (error: any) {
       console.error('[CHAT ERROR]:', error.message);
       if (error.name === 'AbortError') {
         return res.json({ response: 'La solicitud tardó demasiado. Por favor, intenta de nuevo con un mensaje más corto.' });
       }
-      res.json({ response: 'Disculpa, estoy experimentando dificultades técnicas. Por favor, intenta de nuevo en un momento.' });
+      return res.json({ response: 'Disculpa, estoy experimentando dificultades técnicas. Por favor, intenta de nuevo en un momento.' });
     }
   });
 

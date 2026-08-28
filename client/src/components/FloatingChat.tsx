@@ -308,7 +308,7 @@ export default function FloatingChat() {
                               : 'bg-muted text-foreground border border-border rounded-bl-none shadow-md'
                           }`}
                         >
-                          <p className="text-sm leading-relaxed break-words">{msg.content}</p>
+                          <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">{msg.content}</p>
                         </div>
                       </motion.div>
                     ))
